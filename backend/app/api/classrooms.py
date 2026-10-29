@@ -1,0 +1,82 @@
+"""Classroom endpoints for inventory, live status, and device states."""
+from datetime import datetime, date as date_type, time as time_type
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models.models import Classroom, DeviceState
+from app.schemas.schemas import ClassroomOut, ClassroomStatusOut
+from app.services.timetable_service import get_occupancy_status, parse_time_str
+
+router = APIRouter(prefix="/classrooms", tags=["Classrooms"])
+
+
+@router.get("", response_model=List[ClassroomOut])
+def list_classrooms(db: Session = Depends(get_db)):
+    """Retrieve all campus classrooms with their connected loads and device states."""
+    classrooms = db.query(Classroom).order_by(Classroom.name).all()
+    return classrooms
+
+
+@router.get("/{classroom_id}", response_model=ClassroomOut)
+def get_classroom(classroom_id: int, db: Session = Depends(get_db)):
+    """Retrieve single classroom details by ID."""
+    classroom = db.query(Classroom).filter(Classroom.id == classroom_id).first()
+    if not classroom:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Classroom with ID {classroom_id} not found",
+        )
+    return classroom
+
+
+@router.get("/{classroom_id}/status", response_model=ClassroomStatusOut)
+def get_classroom_status(
+    classroom_id: int,
+    weekday: Optional[str] = Query(None, description="Day of week (e.g. MON, TUE, WED)"),
+    date: Optional[date_type] = Query(None, description="Target evaluation date (YYYY-MM-DD)"),
+    time: Optional[str] = Query(None, description="Target evaluation time (HH:MM or HH:MM:SS)"),
+    db: Session = Depends(get_db),
+):
+    """
+    Evaluate real-time or simulated occupancy, period schedule, and potential energy waste.
+    Defaults to current system date, time, and weekday if not explicitly provided.
+    """
+    classroom = db.query(Classroom).filter(Classroom.id == classroom_id).first()
+    if not classroom:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Classroom with ID {classroom_id} not found",
+        )
+
+    now = datetime.now()
+    target_date = date or now.date()
+    
+    # Determine weekday code
+    if weekday:
+        target_weekday = weekday.strip().upper()
+    else:
+        # 0=Monday in Python weekday()
+        days_map = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+        target_weekday = days_map[target_date.weekday()]
+
+    # Determine time
+    if time:
+        try:
+            target_time = parse_time_str(time)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid time format '{time}'. Use HH:MM or HH:MM:SS.",
+            )
+    else:
+        target_time = now.time()
+
+    status_data = get_occupancy_status(
+        classroom_id=classroom_id,
+        weekday=target_weekday,
+        t=target_time,
+        target_date=target_date,
+        db=db,
+    )
+    return status_data
