@@ -116,6 +116,40 @@ Set the tariff, emission factors and other model values in the **Savings model**
 
 ---
 
+## Deploying to Vercel
+
+The repo deploys as **one Vercel project**. The React build is served as static files, and the FastAPI backend runs as a Python serverless function at `/api/*`. Everything is on the same domain, so no CORS setup or API URL is needed.
+
+| File | Purpose |
+|---|---|
+| `vercel.json` | Builds `frontend/`, serves `frontend/dist`, routes `/api/*` (plus `/docs`) to the Python function, and falls back to `index.html` for app routes. |
+| `api/index.py` | The serverless entrypoint; it imports `app` from `backend/app/main.py`. |
+| `requirements.txt` (repo root) | Python packages for Vercel. The ML libraries are left out (see limits). `backend/requirements.txt` stays the full local set. |
+| `.vercelignore` | Keeps node_modules, caches, tests and design-review files out of the upload. |
+
+**Steps**
+
+1. On vercel.com, go to **Add New → Project** and import `himanshu-cloud-oss/green-campus`.
+2. Leave **Root Directory** as the repo root and **Framework Preset** as *Other*. `vercel.json` sets the build commands.
+3. Choose the branch to deploy (e.g. `feat/pilot-floor-console` for a preview) and press **Deploy**.
+
+No environment variables are required. Optional ones:
+
+| Variable | Default | Use |
+|---|---|---|
+| `APP_TIMEZONE` | `Asia/Kolkata` | Campus clock. Vercel servers run on UTC, and the timetable and simulator use this instead. |
+| `DATABASE_URL` | bundled SQLite | Point at a hosted database to keep data between deploys (see limits). |
+
+**Limits on Vercel (read before demoing)**
+
+- **Data resets.** Vercel's filesystem is read-only, so each instance copies the committed `backend/greencampus.db` into `/tmp` and works on that copy. Bookings, trips and inventory edits work during a session but are lost when the instance is recycled or redeployed. For persistent data, move to a hosted Postgres (e.g. Neon or Vercel Postgres): set `DATABASE_URL` and add a driver such as `psycopg[binary]` to the root `requirements.txt`.
+- **No forecasting.** numpy, pandas and scikit-learn together exceed Vercel's function size limit, so `/api/forecast` returns 503 there. No page in the navigation uses it, and it works locally.
+- **Cold starts.** The first request after a quiet spell takes a few seconds, and the monthly projection takes 2–3 s per cold instance because the simulator recomputes the month.
+
+To test the production setup locally with the Vercel CLI (`npm i -g vercel`), run `vercel dev` from the repo root.
+
+---
+
 ## Tests
 
 ```bash

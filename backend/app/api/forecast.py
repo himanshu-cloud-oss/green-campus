@@ -18,14 +18,26 @@ from app.schemas.schemas import (
     AnomalyDetectionOut,
     RecommendationsOut,
 )
-from app.ml.forecasting import ForecastingService
-from app.ml.anomaly_detection import AnomalyDetectionService
+
+
+def _ml():
+    """Import the ML stack lazily: it is optional (left out of the Vercel build to stay under the size limit)."""
+    try:
+        from app.ml.forecasting import ForecastingService
+        from app.ml.anomaly_detection import AnomalyDetectionService
+    except ImportError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Forecasting needs numpy, pandas and scikit-learn, which aren't installed in this deployment.",
+        )
+    return ForecastingService, AnomalyDetectionService
 
 router = APIRouter(prefix="/forecast", tags=["Forecasting & Intelligence"])
 
 
 @router.post("", response_model=ForecastRunOut, status_code=status.HTTP_201_CREATED)
 def generate_energy_forecast(payload: ForecastRequest, db: Session = Depends(get_db)):
+    ForecastingService, _ = _ml()
     """
     Train and execute time-series energy forecasting model.
     Enforces minimum 12 historical monthly records before executing.
@@ -118,6 +130,7 @@ def list_forecast_history(db: Session = Depends(get_db)):
 
 @router.get("/anomalies", response_model=AnomalyDetectionOut)
 def detect_consumption_anomalies(db: Session = Depends(get_db)):
+    _, AnomalyDetectionService = _ml()
     """Detect statistical outliers, summer surges, and winter drops across campus records."""
     records = db.query(MonthlyEnergyRecord).all()
     report = AnomalyDetectionService.detect_anomalies(records)
@@ -126,6 +139,7 @@ def detect_consumption_anomalies(db: Session = Depends(get_db)):
 
 @router.get("/recommendations", response_model=RecommendationsOut)
 def get_green_campus_recommendations(db: Session = Depends(get_db)):
+    _, AnomalyDetectionService = _ml()
     """Generate actionable, timetable-aware sustainability recommendations."""
     classrooms = db.query(Classroom).all()
     timetable = db.query(TimetableEntry).all()

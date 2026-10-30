@@ -24,6 +24,7 @@ from app.services.telemetry_service import (
     FloorModel,
 )
 from app.services.timetable_service import PERIODS, parse_time_str
+from app.clock import now_local
 
 PERIOD_MIN = 50
 EVENING_SLOTS = [time(16, 30), time(17, 20), time(18, 10)]
@@ -74,7 +75,7 @@ def find_slots(
     include_weekends: bool,
     now: Optional[datetime] = None,
 ) -> Dict[str, Any]:
-    now = now or datetime.now()
+    now = now or now_local()
     model = FloorModel(db)
     tariff = _tariff(db)
     needs_set = {n.upper() for n in needs}

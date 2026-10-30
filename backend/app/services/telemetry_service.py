@@ -28,6 +28,7 @@ from app.models.models import (
     TimetableEntry,
 )
 from app.services.inventory_service import CATEGORIES, CATEGORY_SWITCH, device_duty
+from app.clock import today_local, utc_offset
 
 DAY_CODES = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
 DAY_START, DAY_END = time(8, 10), time(16, 30)
@@ -107,7 +108,7 @@ class FloorModel:
         )
         self.floor = floor
         self.spaces = [_Plain(s, assets=[_Plain(a) for a in s.assets]) for s in floor.spaces] if floor else []
-        self._local_offset = datetime.now().astimezone().utcoffset() or timedelta(0)
+        self._local_offset = utc_offset()
         classroom_ids = [s.classroom_id for s in self.spaces if s.classroom_id]
 
         self.timetable: Dict[Tuple[int, str], List[TimetableEntry]] = defaultdict(list)
@@ -341,7 +342,7 @@ class FloorModel:
             t += timedelta(minutes=step_min)
         res = {"date": d.isoformat(), "kwh": round(kwh, 2), "waste_kwh": round(waste, 2),
                **{f"cat_{k}": round(v, 2) for k, v in cats.items()}}
-        if d < date.today():
+        if d < today_local():
             _DAY_CACHE[key] = res
         return res
 
@@ -368,7 +369,7 @@ def warm_cache(days: int = 35) -> None:
         model = FloorModel(db)
         if not model.floor:
             return
-        today = date.today()
+        today = today_local()
         for i in range(1, days + 1):
             model.day_energy(today - timedelta(days=i))
     finally:

@@ -10,13 +10,14 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import AuditLog, MonthlyEnergyRecord, Space
 from app.services.telemetry_service import ASSUMPTIONS, P_ON, FloorModel
+from app.clock import now_local, today_local
 
 router = APIRouter(prefix="/telemetry", tags=["Telemetry (simulated)"])
 
 
 def _parse_at(at: Optional[str]) -> datetime:
     if not at:
-        return datetime.now().replace(microsecond=0)
+        return now_local().replace(microsecond=0)
     try:
         return datetime.fromisoformat(at).replace(tzinfo=None)
     except ValueError:
@@ -49,7 +50,7 @@ def series(
 def daily(days: int = Query(30, ge=1, le=120), floor_id: Optional[int] = None, db: Session = Depends(get_db)):
     """Modelled kWh per day for the last N days (today is partial)."""
     model = FloorModel(db, floor_id)
-    today = date.today()
+    today = today_local()
     return {"simulated": True,
             "days": [model.day_energy(today - timedelta(days=i)) for i in range(days - 1, -1, -1)]}
 
@@ -61,7 +62,7 @@ def month_estimate(floor_id: Optional[int] = None, db: Session = Depends(get_db)
     for the same calendar month. The share is an estimate: the bill is campus-wide.
     """
     model = FloorModel(db, floor_id)
-    today = date.today()
+    today = today_local()
     first = today.replace(day=1)
     n_days = calendar.monthrange(today.year, today.month)[1]
     elapsed = [model.day_energy(first + timedelta(days=i)) for i in range(today.day - 1)]
@@ -102,7 +103,7 @@ def cut_space(space_id: int, db: Session = Depends(get_db)):
     space = db.get(Space, space_id)
     if not space:
         raise HTTPException(404, f"Space {space_id} not found")
-    space.cut_at = datetime.now().replace(microsecond=0)
+    space.cut_at = now_local().replace(microsecond=0)
     db.add(AuditLog(entity_type="SPACE", entity_id=str(space.id), action="CUT", actor="admin",
                     details_json=json.dumps({"space": space.code, "at": space.cut_at.isoformat()})))
     db.commit()

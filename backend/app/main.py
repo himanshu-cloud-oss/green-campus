@@ -1,5 +1,6 @@
 """Main FastAPI application entry point for Green Campus AI (Manav Rachna University)."""
 from datetime import datetime, timezone
+import os
 import threading
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, status
@@ -37,7 +38,9 @@ async def lifespan(app: FastAPI):
     # Idempotently seed default data
     seed_database_if_empty()
     # Pre-compute last month of simulated telemetry in the background
-    threading.Thread(target=warm_cache, daemon=True).start()
+    # (skipped on serverless hosts, where instances are short-lived)
+    if not os.environ.get("VERCEL"):
+        threading.Thread(target=warm_cache, daemon=True).start()
     yield
 
 

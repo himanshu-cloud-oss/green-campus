@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.models.models import MonthlyEnergyRecord
 from app.services.telemetry_service import ASSUMPTIONS, FloorModel
+from app.clock import today_local
 
 TREE_KG_CO2_PER_YEAR = 21.77
 STRATEGY_FOR_STATE = {"VACANT": "vacant_periods", "LUNCH": "lunch", "NO_SHOW": "no_show",
@@ -65,7 +66,7 @@ def run_model(db: Session, req: SavingsModelRequest) -> Dict[str, Any]:
     enabled = {k: getattr(req, k) for k in ("vacant_periods", "lunch", "no_show", "after_hours")}
     grace_h = req.grace_minutes / 60.0
     step = 30
-    year = date.today().year
+    year = today_local().year
 
     mix = {r.month: r for r in db.query(MonthlyEnergyRecord).all()}
     tot = {"baseline": 0.0, "automated": 0.0}

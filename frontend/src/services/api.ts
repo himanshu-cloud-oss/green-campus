@@ -21,7 +21,8 @@ import {
   HealthStatus,
 } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Dev talks to the local backend; a production build calls the same origin (Vercel serves /api/*).
+const API_BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://localhost:8000' : '');
 
 export const apiClient = axios.create({
   baseURL: API_BASE,

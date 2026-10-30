@@ -10,6 +10,7 @@ from datetime import timezone
 from app.models.models import AuditLog
 from app.schemas.schemas import ClassroomOut, ClassroomStatusOut, DeviceStateOut, DeviceStateUpdate
 from app.services.timetable_service import get_occupancy_status, parse_time_str
+from app.clock import now_local
 
 router = APIRouter(prefix="/classrooms", tags=["Classrooms"])
 
@@ -52,7 +53,7 @@ def get_classroom_status(
             detail=f"Classroom with ID {classroom_id} not found",
         )
 
-    now = datetime.now()
+    now = now_local()
     target_date = date or now.date()
     
     # Determine weekday code

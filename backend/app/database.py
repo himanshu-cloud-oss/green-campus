@@ -1,16 +1,40 @@
 """Database session and engine setup."""
+import os
+import shutil
+import tempfile
+from pathlib import Path
 from typing import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from app.config import settings
 
+BUNDLED_DB = Path(__file__).resolve().parent.parent / "greencampus.db"
+
+
+def _resolve_database_url() -> str:
+    """
+    On Vercel the deployment filesystem is read-only, so the committed SQLite file is copied
+    to the temp folder (/tmp) on cold start. Writes then work but are temporary: each new instance starts again
+    from the committed data. Set DATABASE_URL to a hosted database for persistence.
+    """
+    url = settings.DATABASE_URL
+    if os.environ.get("VERCEL") and url.startswith("sqlite"):
+        target = Path(tempfile.gettempdir()) / "greencampus.db"  # /tmp on Vercel
+        if not target.exists() and BUNDLED_DB.exists():
+            shutil.copyfile(BUNDLED_DB, target)
+        return f"sqlite:///{target}"
+    return url
+
+
+DATABASE_URL = _resolve_database_url()
+
 # SQLite connection args for multithreaded FastAPI requests
 connect_args = {}
-if settings.DATABASE_URL.startswith("sqlite"):
+if DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    DATABASE_URL,
     connect_args=connect_args,
     pool_pre_ping=True,
 )
