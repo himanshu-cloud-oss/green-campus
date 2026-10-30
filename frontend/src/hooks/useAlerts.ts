@@ -1,93 +1,51 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Alert } from '../types';
 import { api } from '../services/api';
+import { errorMessage } from '../services/pilot';
 
-export function useAlerts(filterSeverity?: string) {
+export function useAlerts() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAlerts = useCallback(async (isSilent: boolean = false) => {
-    if (!isSilent) setIsLoading(true);
+  const fetchAlerts = useCallback(async () => {
     try {
-      const data = await api.getAlerts({ severity: filterSeverity });
-      setAlerts(data);
+      setAlerts(await api.getAlerts());
       setError(null);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch alerts';
-      setError(msg);
+    } catch (err) {
+      setError(errorMessage(err));
     } finally {
-      if (!isSilent) setIsLoading(false);
+      setIsLoading(false);
     }
-  }, [filterSeverity]);
+  }, []);
 
   useEffect(() => {
-    fetchAlerts(false);
-    const interval = setInterval(() => {
-      fetchAlerts(true);
-    }, 15000);
-
-    return () => clearInterval(interval);
+    fetchAlerts();
+    const id = setInterval(fetchAlerts, 15000);
+    return () => clearInterval(id);
   }, [fetchAlerts]);
 
-  const unreadCount = useMemo(() => {
-    return alerts.filter(a => a.severity !== 'RESOLVED' && !a.acknowledged_at).length;
-  }, [alerts]);
+  const unreadCount = useMemo(() => alerts.filter(a => a.severity !== 'RESOLVED' && !a.acknowledged_at).length, [alerts]);
+  const openCount = useMemo(() => alerts.filter(a => a.severity !== 'RESOLVED').length, [alerts]);
 
-  const activeAlertsCount = useMemo(() => {
-    return alerts.filter(a => a.severity !== 'RESOLVED').length;
-  }, [alerts]);
-
-  const acknowledgeAlert = async (id: number) => {
+  const run = async (fn: () => Promise<unknown>) => {
     try {
-      const updated = await api.acknowledgeAlert(id);
-      setAlerts(prev => prev.map(a => (a.id === id ? updated : a)));
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to acknowledge alert';
-      setError(msg);
-    }
-  };
-
-  const resolveAlert = async (id: number) => {
-    try {
-      const updated = await api.resolveAlert(id);
-      setAlerts(prev => prev.map(a => (a.id === id ? updated : a)));
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to resolve alert';
-      setError(msg);
-    }
-  };
-
-  const deleteAlert = async (id: number) => {
-    try {
-      await api.deleteAlert(id);
-      setAlerts(prev => prev.filter(a => a.id !== id));
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to delete alert';
-      setError(msg);
-    }
-  };
-
-  const clearResolved = async () => {
-    try {
-      await api.clearResolvedAlerts();
-      setAlerts(prev => prev.filter(a => a.severity !== 'RESOLVED'));
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to clear resolved alerts';
-      setError(msg);
+      await fn();
+      await fetchAlerts();
+    } catch (err) {
+      setError(errorMessage(err));
     }
   };
 
   return {
     alerts,
     unreadCount,
-    activeAlertsCount,
+    openCount,
     isLoading,
     error,
-    acknowledgeAlert,
-    resolveAlert,
-    deleteAlert,
-    clearResolved,
-    refetch: () => fetchAlerts(false),
+    acknowledgeAlert: (id: number) => run(() => api.acknowledgeAlert(id)),
+    resolveAlert: (id: number) => run(() => api.resolveAlert(id)),
+    deleteAlert: (id: number) => run(() => api.deleteAlert(id)),
+    refetch: fetchAlerts,
   };
 }

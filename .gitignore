@@ -1,1 +1,25 @@
-frontend/node_modules/
+# Node
+node_modules/
+frontend/dist/
+# stray lockfiles from running npm outside frontend/
+/package-lock.json
+/backend/package-lock.json
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.pytest_cache/
+
+# Local environment
+.env
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Claude Code: keep project skills, ignore personal settings
+.claude/settings.local.json

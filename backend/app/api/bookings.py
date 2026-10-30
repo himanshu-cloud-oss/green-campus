@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from app.database import get_db
 from app.models.models import ExtraClassBooking, Classroom, TimetableEntry, AuditLog
-from app.schemas.schemas import BookingCreate, BookingUpdate, BookingOut
+from app.schemas.schemas import AutoBookingRequest, BookingCreate, BookingUpdate, BookingOut
+from app.services.booking_service import find_slots
 
 router = APIRouter(prefix="/bookings", tags=["Extra Class Bookings"])
 
@@ -98,6 +99,8 @@ def create_booking(payload: BookingCreate, db: Session = Depends(get_db)):
         expected_students=payload.expected_students,
         notes=payload.notes,
         status="ACTIVE",
+        source=(payload.source or "MANUAL").upper(),
+        requested_by=payload.requested_by,
         created_at=now,
         updated_at=now,
     )
@@ -108,7 +111,7 @@ def create_booking(payload: BookingCreate, db: Session = Depends(get_db)):
         entity_type="BOOKING",
         entity_id=str(booking.id),
         action="CREATE",
-        actor="academic_scheduler",
+        actor="auto_scheduler" if (payload.source or "").upper() == "AUTO" else "academic_scheduler",
         details_json=json.dumps({
             "classroom": classroom.name,
             "date": payload.date.isoformat(),
@@ -122,6 +125,65 @@ def create_booking(payload: BookingCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(booking)
     return booking
+
+
+@router.post("/auto")
+def auto_book(payload: AutoBookingRequest, db: Session = Depends(get_db)):
+    """
+    Find the lowest-energy free room and slot for an extra class and (by default) book it.
+    Returns the chosen slot plus ranked alternatives; with auto_book=false it only suggests.
+    """
+    result = find_slots(
+        db,
+        start_date=payload.date,
+        search_days=payload.search_days,
+        window_start=payload.window_start,
+        window_end=payload.window_end,
+        duration_minutes=payload.duration_minutes,
+        expected_students=payload.expected_students,
+        needs=payload.needs,
+        align_to_periods=payload.align_to_periods,
+        allow_lunch=payload.allow_lunch,
+        include_weekends=payload.include_weekends,
+    )
+    candidates = result["candidates"]
+    response = {
+        "booked": None,
+        "chosen": candidates[0] if candidates else None,
+        "alternatives": candidates[1:6],
+        "total_options": len(candidates),
+        "eligible_rooms": result["eligible_rooms"],
+        "rejected_rooms": result["rejected_rooms"],
+        "days_searched": result["days_searched"],
+    }
+    if not candidates:
+        response["message"] = "No free room fits this request. Widen the time window, add days, or reduce students."
+        return response
+    if not payload.auto_book:
+        response["message"] = f"Best option: {candidates[0]['room']} {candidates[0]['date']} {candidates[0]['start_time']}"
+        return response
+
+    best = candidates[0]
+    booking = create_booking(
+        BookingCreate(
+            classroom_id=best["classroom_id"],
+            date=date_type.fromisoformat(best["date"]),
+            start_time=datetime.strptime(best["start_time"], "%H:%M").time(),
+            end_time=datetime.strptime(best["end_time"], "%H:%M").time(),
+            subject=payload.subject,
+            expected_students=payload.expected_students,
+            notes=payload.notes,
+            source="AUTO",
+            requested_by=payload.requested_by,
+        ),
+        db,
+    )
+    response["booked"] = BookingOut.model_validate(booking).model_dump(mode="json")
+    response["message"] = (
+        f"Booked {best['room']} on {best['date']} {best['start_time']}-{best['end_time']} "
+        f"(est. {best['est_kwh']} kWh, Rs {best['est_cost_inr']})"
+    )
+    return response
 
 
 @router.get("", response_model=List[BookingOut])

@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1440px;height:900px;overflow:hidden;background:#0F1113;color:#F4F4F2;font-family:Archivo,sans-serif;display:grid;grid-template-columns:200px 1fr}
+nav{background:#08090A;padding:20px 14px;font-size:13px;color:#9AA0A6}nav b{display:block;color:#F4F4F2;margin-bottom:20px}nav p{padding:8px}nav p.on{color:#FFB000;border-left:2px solid #FFB000}
+main{padding:24px 32px}
+h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#9AA0A6;display:flex;justify-content:space-between}
+.board{margin-top:14px;font-family:'JetBrains Mono',monospace}
+.h,.row{display:grid;grid-template-columns:110px 220px 280px 120px 120px 1fr 110px;align-items:center;padding:0 16px}
+.h{font:600 11px Archivo;letter-spacing:.12em;color:#9AA0A6;padding-bottom:8px;border-bottom:1px solid #2A2E33}
+.row{height:56px;border-bottom:1px solid #1B1E22;font-size:17px;background:#141619}
+.row.alert{background:#2B2003;color:#FFB000}
+.row .st{font:600 13px Archivo;letter-spacing:.08em}.red{color:#E5484D}.green{color:#3DD68C}
+.cut{font:700 12px Archivo;letter-spacing:.1em;background:#FFB000;color:#0F1113;border:0;padding:9px 18px;border-radius:2px}
+.foot{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px}
+.box{background:#141619;border:1px solid #1B1E22;height:190px;padding:14px;font:600 11px Archivo;letter-spacing:.12em;color:#9AA0A6}
+</style></head><body>
+<nav><b>Green Campus AI</b><p class="on">Board</p><p>Classrooms</p><p>Bookings</p><p>Floor maps</p><p>Savings</p></nav>
+<main>
+<h1><span>L Block 2nd floor · rooms by waste</span><span>11:45 · 13.1 kW · waste 8.7 kW · 30°C · simulated</span></h1>
+<div class="board">
+<div class="h"><span>ROOM</span><span>STATE</span><span>ON NOW</span><span>KW</span><span>WASTE</span><span>SINCE</span><span></span></div>
+<div class="row alert"><span>LS-08</span><span class="st">LUNCH · EMPTY</span><span>2 AC 8 LIGHTS</span><span>2.10</span><span>2.10</span><span>11:30 · 15m</span><button class="cut">CUT</button></div>
+<div class="row alert"><span>LS-09</span><span class="st">LUNCH · EMPTY</span><span>12 LIGHTS 4 FANS</span><span>1.88</span><span>1.88</span><span>11:30 · 15m</span><button class="cut">CUT</button></div>
+<div class="row"><span>LS-10</span><span class="st red">LUNCH · EMPTY</span><span>1 AC 8 LIGHTS</span><span>1.90</span><span>1.90</span><span>11:30 · 15m</span><button class="cut">CUT</button></div>
+<div class="row"><span>LS-03</span><span class="st red">LUNCH · EMPTY</span><span>BOARD 6 LIGHTS</span><span>1.60</span><span>1.60</span><span>11:30 · 15m</span><button class="cut">CUT</button></div>
+<div class="row"><span>LS-04</span><span class="st red">LUNCH · EMPTY</span><span>4 FANS 5 LIGHTS</span><span>1.30</span><span>1.30</span><span>11:30 · 15m</span><button class="cut">CUT</button></div>
+<div class="row"><span>LS-05</span><span class="st green">STAFF PRESENT</span><span>2 AC 6 PCS</span><span>2.40</span><span>—</span><span>08:00</span><span></span></div>
+<div class="row"><span>COR-2</span><span class="st green">FLOOR OPEN</span><span>16 TUBES</span><span>0.90</span><span>—</span><span>07:45</span><span></span></div>
+</div>
+<div class="foot"><div class="box">FLOOR STRIP</div><div class="box">TODAY · LOAD RIBBON</div></div>
+</main></body></html>

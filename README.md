@@ -11,6 +11,23 @@ This is a **demonstration prototype** operating in **Demo Mode**. All device sta
 
 ---
 
+## Pilot: L Block, 2nd floor
+
+The pilot covers LS-03, LS-04, LS-08, LS-09 and LS-10 (LS-04 and LS-08 seat ~40, the rest ~60), the LS-05 staff room, the corridor, washrooms and stairs.
+
+| Page | What it does |
+|---|---|
+| Floor panel (`/`) | The floor as a live single-line diagram. Amber feeders are drawing power into empty rooms; **TRIP** switches a room's controllable loads off while it stays empty today. Click the 24 h chart to replay any moment. |
+| Floor maps (`/floors`) | Edit floors, rooms, common areas and every device (quantity, rated W, standby W, switchable, ESTIMATED/VERIFIED). All loads in the app derive from this inventory. |
+| Book extra class (`/book`) | Describe the class; the system picks and books the lowest-energy free room and slot, with ranked alternatives. |
+| Savings model (`/savings`) | A year of baseline vs automated energy using the real timetable, inventory and the 2024–25 supply mix, with tariff, calendar, upgrade and payback settings. |
+
+Keyboard: `Ctrl K` opens the command palette (jump to a room, trip a feeder); number keys `1`–`9` switch pages.
+
+**What is simulated:** there is no metering or relay hardware yet. Live power is modelled from the inventory, timetable, bookings, Faridabad's seasonal temperature and a behaviour model (lights left on, classes not held), seeded so the same moment always gives the same reading. Endpoints: `/api/telemetry/*`. Device ratings are typical values marked ESTIMATED until real specs are entered.
+
+---
+
 ## 📋 Table of Contents
 
 1. [Architecture Overview](#architecture)

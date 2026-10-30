@@ -8,20 +8,20 @@ export interface Classroom {
   current_status?: ClassroomStatus;
 }
 
-export type OccupancyStatus =
-  | 'SCHEDULED_OCCUPIED'
-  | 'VACANT'
-  | 'EXTRA_CLASS'
-  | 'NO_SHOW_SIMULATED'
-  | 'UNKNOWN'
-  | 'LUNCH';
+/** Status from /api/classrooms/{id}/status. */
+export type RoomStatus = 'OCCUPIED' | 'BOOKED_EXTRA_CLASS' | 'VACANT' | 'LUNCH' | 'AFTER_HOURS';
 
 export interface ClassroomStatus {
   classroom_id: number;
-  occupancy_status: OccupancyStatus;
+  name: string;
+  status: RoomStatus;
+  current_period?: PeriodDefinition | null;
   timetable_entry?: TimetableEntry;
   active_booking?: ExtraClassBooking;
-  active_simulation?: SimulationEvent;
+  /** Simulated draw from the device inventory and behaviour model. */
+  energy_draw_kw: number;
+  waste_detected: boolean;
+  waste_reason?: string | null;
 }
 
 // Device State
@@ -30,8 +30,8 @@ export interface DeviceState {
   ac_on: boolean;
   fan_on: boolean;
   lights_on: boolean;
-  updated_at: string;
-  source: 'TIMETABLE' | 'OVERRIDE' | 'SIMULATION';
+  updated_at?: string;
+  source: string;
 }
 
 // Timetable
@@ -105,6 +105,7 @@ export interface SimulationEvent {
   scheduled_action_at: string;
   status: 'PENDING' | 'EXECUTED' | 'CANCELLED';
   period_label: string;
+  notes?: string | null;
   seconds_remaining?: number;
 }
 

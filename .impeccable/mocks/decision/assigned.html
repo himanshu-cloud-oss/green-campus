@@ -1,0 +1,66 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1440px;height:900px;overflow:hidden;background:#0B1220;color:#E6EDF5;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;display:grid;grid-template-columns:64px 1fr}
+.rail{background:#08101D;border-right:1px solid #1D2A44;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:18px}
+.rail i{width:28px;height:28px;border-radius:6px;background:#1D2A44;display:block}.rail i.on{background:#3A7BD5}
+main{display:grid;grid-template-rows:72px 1fr 210px;grid-template-columns:1fr 380px}
+.strip{grid-column:1/3;display:flex;align-items:stretch;border-bottom:1px solid #1D2A44}
+.k{padding:12px 24px;border-right:1px solid #1D2A44;min-width:190px}.k small{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7C8BA1}.k b{display:block;font-size:26px;font-weight:600;margin-top:2px}.k b em{font-style:normal;font-size:13px;color:#7C8BA1;font-weight:500;margin-left:4px}
+.k.w b{color:#F2994A}.title{margin-left:auto;padding:14px 24px;text-align:right}.title h1{font-size:15px;font-weight:600}.title p{font-size:12px;color:#7C8BA1}
+.map{position:relative;padding:22px 24px}.map h2,.q h2,.rib h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#7C8BA1;font-weight:600;margin-bottom:12px}
+.plan{position:relative;height:430px;border:1px solid #2A3A5C;border-radius:4px;background:repeating-radial-gradient(circle at 70% 40%,transparent 0 22px,rgba(122,150,190,.06) 22px 23px)}
+.r{position:absolute;border:1px solid rgba(230,237,245,.25);padding:10px;font-size:13px}.r b{font-size:15px;display:block}.r span{font-size:12px;opacity:.85}
+.c0{background:rgba(58,123,213,.35)}.c1{background:rgba(47,163,107,.45)}.c2{background:rgba(242,201,76,.55);color:#111}.c3{background:rgba(242,153,74,.7);color:#111}.c4{background:rgba(229,72,77,.75)}
+.waste{outline:2px solid #E5484D;outline-offset:-4px}
+.cor{background:rgba(58,123,213,.18)}
+.legend{display:flex;gap:0;margin-top:12px;align-items:center;font-size:11px;color:#7C8BA1}.legend i{width:48px;height:8px;display:block}
+.q{border-left:1px solid #1D2A44;padding:22px 20px;grid-row:2/4}
+.row{display:grid;grid-template-columns:58px 1fr 64px 62px;align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid #1D2A44;font-size:13px}
+.row b{font-size:14px}.row small{display:block;color:#7C8BA1;font-size:12px}.row .kw{text-align:right;font-weight:600;color:#F2994A}
+.cut{background:#C8F169;color:#0B1220;border:0;border-radius:4px;padding:7px 0;font:600 12px Archivo;width:62px}
+.rib{padding:14px 24px;border-top:1px solid #1D2A44}
+svg{display:block}
+.scrub{display:flex;justify-content:space-between;font-size:11px;color:#7C8BA1;margin-top:6px}
+</style></head><body>
+<nav class="rail"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></nav>
+<main>
+<div class="strip">
+<div class="k"><small>Floor load now</small><b>13.1<em>kW</em></b></div>
+<div class="k w"><small>Waste now</small><b>8.7<em>kW</em></b></div>
+<div class="k"><small>Today</small><b>96.4<em>kWh</em></b></div>
+<div class="k"><small>Outdoor</small><b>30.2<em>°C</em></b></div>
+<div class="k"><small>Devices on</small><b>97<em>/ 163</em></b></div>
+<div class="title"><h1>L Block · 2nd floor</h1><p>Thu 29 Oct · 11:45 · Lunch break · simulated</p></div>
+</div>
+<section class="map"><h2>Live load map</h2>
+<div class="plan">
+<div class="r c3 waste" style="left:0;top:0;width:25%;height:40%"><b>LS-03</b><span>Lunch · 1.6 kW</span></div>
+<div class="r c2 waste" style="left:25%;top:0;width:16.6%;height:40%"><b>LS-04</b><span>Lunch · 1.3 kW</span></div>
+<div class="r c3" style="left:41.6%;top:0;width:20.8%;height:40%"><b>LS-05</b><span>Staff · 2.4 kW</span></div>
+<div class="r c0" style="left:62.4%;top:0;width:12.5%;height:40%"><b>WR-1</b><span>0.1</span></div>
+<div class="r c0" style="left:74.9%;top:0;width:25.1%;height:40%"><b>Stairs</b><span>0.1 kW</span></div>
+<div class="r cor" style="left:0;top:40%;width:100%;height:20%"><b>Corridor</b><span>0.9 kW · open</span></div>
+<div class="r c4 waste" style="left:0;top:60%;width:16.6%;height:40%"><b>LS-08</b><span>Lunch · 2.1 kW</span></div>
+<div class="r c3 waste" style="left:16.6%;top:60%;width:25%;height:40%"><b>LS-09</b><span>Lunch · 1.9 kW</span></div>
+<div class="r c3 waste" style="left:41.6%;top:60%;width:25%;height:40%"><b>LS-10</b><span>Lunch · 1.9 kW</span></div>
+<div class="r c0" style="left:66.6%;top:60%;width:12.5%;height:40%"><b>WR-2</b><span>0.1</span></div>
+</div>
+<div class="legend">0 kW&nbsp;<i style="background:#3A7BD5"></i><i style="background:#2FA36B"></i><i style="background:#F2C94C"></i><i style="background:#F2994A"></i><i style="background:#E5484D"></i>&nbsp;5 kW · red outline = power in an empty room</div>
+</section>
+<aside class="q"><h2>Waste queue · 5 rooms</h2>
+<div class="row"><b>LS-08</b><span>3 AC, lights on<small>Lunch break · 22 min</small></span><span class="kw">2.1 kW</span><button class="cut">Cut</button></div>
+<div class="row"><b>LS-09</b><span>12 lights, 4 fans<small>Lunch break · 22 min</small></span><span class="kw">1.9 kW</span><button class="cut">Cut</button></div>
+<div class="row"><b>LS-10</b><span>1 AC, 8 lights<small>Lunch break · 22 min</small></span><span class="kw">1.9 kW</span><button class="cut">Cut</button></div>
+<div class="row"><b>LS-03</b><span>Smartboard, 6 lights<small>Lunch break · 22 min</small></span><span class="kw">1.6 kW</span><button class="cut">Cut</button></div>
+<div class="row"><b>LS-04</b><span>4 fans, 5 lights<small>Lunch break · 22 min</small></span><span class="kw">1.3 kW</span><button class="cut">Cut</button></div>
+<h2 style="margin-top:22px">Next up</h2>
+<div class="row"><b>12:20</b><span>Period 6 starts<small>LS-03, LS-08, LS-10 · pre-cool 12:10</small></span><span></span><span></span></div>
+<div class="row"><b>14:00</b><span>Extra class · DSA remedial<small>LS-08 · auto-booked</small></span><span></span><span></span></div>
+</aside>
+<section class="rib"><h2>Today · floor kW · waste shaded</h2>
+<svg width="980" height="120" viewBox="0 0 980 120"><path d="M0 115 L200 112 L230 60 L300 34 L380 30 L420 32 L445 70 L480 72 L500 40 L560 36 L620 38 L700 40 L740 90 L800 108 L980 112" fill="none" stroke="#E6EDF5" stroke-width="1.6"/><path d="M420 32 L445 70 L480 72 L480 115 L420 115Z" fill="rgba(242,153,74,.35)"/><line x1="470" y1="0" x2="470" y2="120" stroke="#C8F169" stroke-width="2"/></svg>
+<div class="scrub"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+</section>
+</main></body></html>

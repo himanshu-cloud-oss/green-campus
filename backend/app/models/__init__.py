@@ -12,6 +12,10 @@ from app.models.models import (
     ForecastRun,
     AuditLog,
     Setting,
+    Building,
+    Floor,
+    Space,
+    Asset,
 )
 
 __all__ = [
@@ -27,4 +31,8 @@ __all__ = [
     "ForecastRun",
     "AuditLog",
     "Setting",
+    "Building",
+    "Floor",
+    "Space",
+    "Asset",
 ]

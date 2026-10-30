@@ -103,7 +103,7 @@ export const AIForecasting: React.FC = () => {
         <div className="space-y-1 leading-relaxed">
           <div className="flex items-center gap-2 font-bold text-amber-200">
             <span>EXPERIMENTAL AI FORECASTING MODULE — STATISTICAL DISCLAIMER</span>
-            <Badge variant="warning" size="sm">
+            <Badge variant="strong">
               Beta / Lab
             </Badge>
           </div>
@@ -178,7 +178,7 @@ export const AIForecasting: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="font-bold text-sm text-slate-100">{m.title}</span>
-                  <Badge variant={selectedModel === m.id ? 'violet' : 'neutral'} size="sm">
+                  <Badge variant={selectedModel === m.id ? 'strong' : 'neutral'}>
                     {m.tag}
                   </Badge>
                 </div>
@@ -323,7 +323,7 @@ export const AIForecasting: React.FC = () => {
               <ShieldAlert className="w-4 h-4 text-amber-400" />
               <span>Statistical Anomaly Detection (Z-Score &gt; 1.8)</span>
             </h3>
-            <Badge variant="warning" size="sm">
+            <Badge variant="strong">
               2 Anomalies Logged
             </Badge>
           </div>
@@ -341,7 +341,7 @@ export const AIForecasting: React.FC = () => {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-white">{anom.month_label}</span>
-                    <Badge variant={anom.severity === 'HIGH' ? 'error' : 'warning'} size="sm">
+                    <Badge variant={anom.severity === 'HIGH' ? 'strong' : 'neutral'}>
                       Z: {anom.z_score}
                     </Badge>
                   </div>

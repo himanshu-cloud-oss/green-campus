@@ -29,6 +29,24 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
-def init_db() -> None:
-    """Create all database tables."""
-    Base.metadata.create_all(bind=engine)
+def init_db(bind=None) -> None:
+    """Create all database tables and add any new nullable columns to existing tables."""
+    target = bind or engine
+    Base.metadata.create_all(bind=target)
+    _add_missing_columns(target)
+
+
+def _add_missing_columns(target) -> None:
+    """create_all() never alters existing tables, so add columns introduced after a DB was created."""
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(target)
+    with target.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if not inspector.has_table(table.name):
+                continue
+            existing = {c["name"] for c in inspector.get_columns(table.name)}
+            for col in table.columns:
+                if col.name not in existing and col.nullable:
+                    col_type = col.type.compile(dialect=target.dialect)
+                    conn.execute(text(f'ALTER TABLE {table.name} ADD COLUMN {col.name} {col_type}'))

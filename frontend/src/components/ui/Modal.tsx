@@ -54,7 +54,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
       onClick={e => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -66,31 +66,31 @@ export const Modal: React.FC<ModalProps> = ({
     >
       <div
         ref={modalRef}
-        className={`w-full ${maxWidthClasses[maxWidth]} bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl shadow-cyan-950/40 overflow-hidden flex flex-col max-h-[90vh]`}
+        className={`w-full ${maxWidthClasses[maxWidth]} bg-panel-raised border border-panel-wire rounded-[3px] shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] overflow-hidden flex flex-col max-h-[90vh]`}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-slate-800 bg-slate-900/80">
+        <div className="flex items-start justify-between px-4 py-3 border-b border-panel-seam">
           <div>
-            <h2 id="modal-title" className="text-lg font-semibold text-white">
+            <h2 id="modal-title" className="text-[15px] font-semibold text-panel-ink">
               {title}
             </h2>
-            {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+            {subtitle && <p className="text-xs text-panel-muted mt-0.5">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            className="p-1 text-panel-muted hover:text-panel-ink rounded-[3px] snap"
             aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" strokeWidth={1.6} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-5 overflow-y-auto space-y-4 flex-1">{children}</div>
+        <div className="px-4 py-3 overflow-y-auto space-y-4 flex-1">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 p-4 border-t border-slate-800 bg-slate-950/50">
+          <div className="flex items-center justify-end gap-3 px-4 py-3 border-t border-panel-seam">
             {footer}
           </div>
         )}

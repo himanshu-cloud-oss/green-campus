@@ -1,68 +1,34 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Classroom } from '../types';
 import { api } from '../services/api';
+import { errorMessage } from '../services/pilot';
 
-interface UseClassroomsParams {
-  weekday?: string;
-  date?: string;
-  time?: string;
-}
-
-export function useClassrooms(params?: UseClassroomsParams) {
+/** Rooms with their backend status. With no date/time it follows the live clock and refreshes every 15 s. */
+export function useClassrooms(params?: { date?: string; time?: string }) {
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  const weekday = params?.weekday;
   const date = params?.date;
   const time = params?.time;
 
-  const fetchClassrooms = useCallback(async (isSilent: boolean = false) => {
-    if (!isSilent) setIsLoading(true);
+  const fetchClassrooms = useCallback(async () => {
     try {
-      const data = await api.getClassrooms({ weekday, date, time });
-      setClassrooms(data);
+      setClassrooms(await api.getClassrooms({ date, time }));
       setError(null);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to fetch classrooms';
-      setError(msg);
+    } catch (err) {
+      setError(errorMessage(err));
     } finally {
-      if (!isSilent) setIsLoading(false);
+      setIsLoading(false);
     }
-  }, [weekday, date, time]);
+  }, [date, time]);
 
   useEffect(() => {
-    fetchClassrooms(false);
-    const interval = setInterval(() => {
-      fetchClassrooms(true);
-    }, 30000);
+    setIsLoading(true);
+    fetchClassrooms();
+    if (date || time) return;
+    const id = setInterval(fetchClassrooms, 15000);
+    return () => clearInterval(id);
+  }, [fetchClassrooms, date, time]);
 
-    return () => clearInterval(interval);
-  }, [fetchClassrooms]);
-
-  const updateDeviceState = async (
-    classroomId: number,
-    state: { ac_on?: boolean; fan_on?: boolean; lights_on?: boolean }
-  ) => {
-    try {
-      const updated = await api.updateDeviceState(classroomId, {
-        ...state,
-        source: 'OVERRIDE',
-      });
-      setClassrooms(prev => prev.map(c => (c.id === classroomId ? updated : c)));
-      return updated;
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to update device state';
-      setError(msg);
-      throw err;
-    }
-  };
-
-  return {
-    classrooms,
-    isLoading,
-    error,
-    refetch: () => fetchClassrooms(false),
-    updateDeviceState,
-  };
+  return { classrooms, isLoading, error, refetch: fetchClassrooms };
 }

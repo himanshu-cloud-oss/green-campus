@@ -120,8 +120,8 @@ class TimetableEntryOut(TimetableEntryBase):
 class ClassroomBase(BaseModel):
     """Classroom base definition."""
     name: str
-    building: str = "Engineering Block"
-    floor: int = 1
+    building: str = "L Block"
+    floor: int = 2
     capacity: int = 60
     connected_load_kw: float = 2.4
 
@@ -169,6 +169,9 @@ class BookingBase(BaseModel):
 
 class BookingCreate(BookingBase):
     """Schema to create a classroom booking with start/end time validation."""
+    source: Optional[str] = "MANUAL"
+    requested_by: Optional[str] = None
+
     @model_validator(mode="after")
     def validate_times(self) -> "BookingCreate":
         if self.start_time >= self.end_time:
@@ -193,10 +196,36 @@ class BookingUpdate(BaseModel):
         return self
 
 
+class AutoBookingRequest(BaseModel):
+    """Describe the extra class; the system picks the room and slot."""
+    subject: str = Field(..., min_length=1, max_length=150)
+    expected_students: int = Field(..., ge=1, le=500)
+    date: date
+    search_days: int = Field(1, ge=1, le=14)
+    window_start: time = time(8, 10)
+    window_end: time = time(18, 30)
+    duration_minutes: int = Field(50, ge=10, le=300)
+    needs: List[str] = []
+    align_to_periods: bool = True
+    allow_lunch: bool = False
+    include_weekends: bool = False
+    auto_book: bool = True
+    requested_by: Optional[str] = None
+    notes: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_window(self) -> "AutoBookingRequest":
+        if self.window_start >= self.window_end:
+            raise ValueError("window_start must be before window_end")
+        return self
+
+
 class BookingOut(BookingBase):
     """Schema for returning a booking."""
     id: int
     status: str
+    source: Optional[str] = "MANUAL"
+    requested_by: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)

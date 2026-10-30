@@ -1,5 +1,6 @@
 """Main FastAPI application entry point for Green Campus AI (Manav Rachna University)."""
 from datetime import datetime, timezone
+import threading
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +11,7 @@ from app.config import settings
 from app.database import init_db, get_db
 from app.schemas.schemas import HealthResponse
 from scripts.seed_data import seed_database_if_empty
+from app.services.telemetry_service import warm_cache
 
 # Import all API routers
 from app.api import (
@@ -22,6 +24,8 @@ from app.api import (
     savings_router,
     forecast_router,
     audit_router,
+    inventory_router,
+    telemetry_router,
 )
 
 
@@ -32,6 +36,8 @@ async def lifespan(app: FastAPI):
     init_db()
     # Idempotently seed default data
     seed_database_if_empty()
+    # Pre-compute last month of simulated telemetry in the background
+    threading.Thread(target=warm_cache, daemon=True).start()
     yield
 
 
@@ -63,6 +69,8 @@ app.include_router(alerts_router, prefix="/api")
 app.include_router(savings_router, prefix="/api")
 app.include_router(forecast_router, prefix="/api")
 app.include_router(audit_router, prefix="/api")
+app.include_router(inventory_router, prefix="/api")
+app.include_router(telemetry_router, prefix="/api")
 
 
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])

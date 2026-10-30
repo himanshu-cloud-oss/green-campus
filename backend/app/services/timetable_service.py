@@ -135,25 +135,44 @@ def get_occupancy_status(
     else:
         status = "VACANT"
 
-    # Compute current electrical draw based on device states
-    # Default loads: AC = 1.5 kW, Fan = 0.075 kW, Lights = 0.2 kW
+    # Electrical draw comes from the device inventory + behaviour model (simulated telemetry).
+    from datetime import datetime as _dt
+    from app.services.telemetry_service import FloorModel, outdoor_temp_c
+
     energy_draw_kw = 0.0
-    if device_state:
-        if device_state.ac_on:
-            energy_draw_kw += 1.5
-        if device_state.fan_on:
-            energy_draw_kw += 0.075
-        if device_state.lights_on:
-            energy_draw_kw += 0.2
-    else:
-        # Fallback to connected load if occupied
-        if status in ("OCCUPIED", "BOOKED_EXTRA_CLASS"):
-            energy_draw_kw = classroom.connected_load_kw if classroom else 2.4
+    live_switches = None
+    model = FloorModel(db)
+    space = next((sp for sp in model.spaces if sp.classroom_id == classroom_id), None)
+    if space is not None:
+        at = _dt.combine(target_date, t)
+        sim_state = "BOOKED" if status == "BOOKED_EXTRA_CLASS" else status
+        temp = outdoor_temp_c(at)
+        readings = [model.asset_reading(a, space, sim_state, at, temp) for a in space.assets]
+        energy_draw_kw = sum(r["kw"] for r in readings)
+        on_by_cat = {}
+        for r in readings:
+            on_by_cat[r["category"]] = on_by_cat.get(r["category"], 0) + r["on_count"]
+        live_switches = {
+            "ac_on": on_by_cat.get("HVAC", 0) > 0,
+            "fan_on": on_by_cat.get("FAN", 0) > 0,
+            "lights_on": on_by_cat.get("LIGHTING", 0) > 0,
+        }
+    elif classroom is not None and status in ("OCCUPIED", "BOOKED_EXTRA_CLASS"):
+        energy_draw_kw = classroom.connected_load_kw
+
+    if device_state is not None and live_switches is not None:
+        device_state = {
+            "id": device_state.id,
+            "classroom_id": classroom_id,
+            "source": device_state.source,
+            "updated_at": device_state.updated_at,
+            **live_switches,
+        }
 
     # Detect unnecessary energy waste
     waste_detected = False
     waste_reason = None
-    if status in ("VACANT", "LUNCH", "AFTER_HOURS") and energy_draw_kw > 0.0:
+    if status in ("VACANT", "LUNCH", "AFTER_HOURS") and energy_draw_kw > 0.05:
         waste_detected = True
         waste_reason = (
             f"Electrical loads running ({energy_draw_kw:.2f} kW) while room is {status.lower().replace('_', ' ')}"
