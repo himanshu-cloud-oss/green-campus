@@ -17,16 +17,19 @@ from app.models.models import (
     Setting,
     Alert,
 )
+from app.services.inventory_service import seed_inventory
 
 # -----------------------------------------------------------------------------
 # 1. Classrooms
 # -----------------------------------------------------------------------------
+# All pilot rooms are on L Block, 2nd floor ("LS" = L block, Second floor).
+# LS-04 and LS-08 are smaller rooms (~40 seats); capacities are estimates.
 CLASSROOMS_DATA = [
-    {"name": "LS-03", "building": "Block L", "floor": 1, "capacity": 60, "connected_load_kw": 2.4},
-    {"name": "LS-04", "building": "Block L", "floor": 1, "capacity": 60, "connected_load_kw": 2.4},
-    {"name": "LS-08", "building": "Block L", "floor": 2, "capacity": 60, "connected_load_kw": 2.4},
-    {"name": "LS-09", "building": "Block L", "floor": 2, "capacity": 60, "connected_load_kw": 2.4},
-    {"name": "LS-10", "building": "Block L", "floor": 3, "capacity": 60, "connected_load_kw": 2.4},
+    {"name": "LS-03", "building": "L Block", "floor": 2, "capacity": 60, "connected_load_kw": 5.33},
+    {"name": "LS-04", "building": "L Block", "floor": 2, "capacity": 40, "connected_load_kw": 4.04},
+    {"name": "LS-08", "building": "L Block", "floor": 2, "capacity": 40, "connected_load_kw": 4.04},
+    {"name": "LS-09", "building": "L Block", "floor": 2, "capacity": 60, "connected_load_kw": 5.33},
+    {"name": "LS-10", "building": "L Block", "floor": 2, "capacity": 60, "connected_load_kw": 5.33},
 ]
 
 # -----------------------------------------------------------------------------
@@ -59,6 +62,7 @@ DEFAULT_SETTINGS = [
     {"key": "lights_load_kw", "value": "0.2", "description": "Lighting load in kW"},
     {"key": "demo_mode", "value": "true", "description": "Demo mode enabled"},
     {"key": "no_show_countdown_seconds", "value": "180", "description": "No-show simulation countdown in seconds"},
+    {"key": "tariff_category", "value": "COMMERCIAL", "description": "DHBVN tariff category (assumed commercial / NDS)"},
 ]
 
 # -----------------------------------------------------------------------------
@@ -112,6 +116,11 @@ def seed_database_if_empty(db: Session = None):
                 classroom_map[c_data["name"]] = room
             else:
                 classroom_map[c_data["name"]] = existing
+                # Correct rooms created by older seeds (wrong floor/building/capacity)
+                if existing.floor != c_data["floor"] or existing.building != c_data["building"]:
+                    existing.floor = c_data["floor"]
+                    existing.building = c_data["building"]
+                    existing.capacity = c_data["capacity"]
                 # Ensure device state exists
                 if not existing.device_state:
                     d_state = DeviceState(
@@ -125,6 +134,9 @@ def seed_database_if_empty(db: Session = None):
                     db.add(d_state)
 
         db.commit()
+
+        # --- 1b. Building inventory (floor, spaces, devices) ---
+        seed_inventory(db)
 
         # --- 2. Monthly Historical Energy Data ---
         count_monthly = db.query(MonthlyEnergyRecord).count()

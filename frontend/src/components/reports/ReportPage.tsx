@@ -1,370 +1,277 @@
-import React, { useState, useEffect } from 'react';
-import { Card } from '../ui/Card';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ExportButtons } from './ExportButtons';
-import { EnergyStackedBar } from '../charts/EnergyStackedBar';
-import { HISTORICAL_ENERGY_DATA } from '../../utils/energyUtils';
+import { Badge } from '../ui/Badge';
 import { api } from '../../services/api';
-import { AuditEntry, ExtraClassBooking } from '../../types';
-import { formatNumberWithCommas, formatDateTime } from '../../utils/formatters';
-import { FileBarChart, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { DayEnergy, errorMessage, pilot } from '../../services/pilot';
+import { AuditEntry, ExtraClassBooking, MonthlyEnergyRecord } from '../../types';
+import { formatDateTime, formatNumberWithCommas as n0 } from '../../utils/formatters';
+
+type Tab = 'bills' | 'floor' | 'bookings' | 'log';
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'bills', label: 'Campus bills' },
+  { id: 'floor', label: 'Floor energy · 30 days' },
+  { id: 'bookings', label: 'Extra classes' },
+  { id: 'log', label: 'Change log' },
+];
+
+const th = 'font-medium px-3 py-1.5 first:pl-4 last:pr-4';
+const td = 'px-3 py-2 first:pl-4 last:pr-4';
+
+/** Heading row of a report: what it is, where the numbers come from, and the export. */
+const Head: React.FC<{ title: string; source: React.ReactNode; tag: string; children?: React.ReactNode }> = ({ title, source, tag, children }) => (
+  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 border-b border-panel-seam">
+    <h2 className="section-title">{title}</h2>
+    <Badge variant={tag === 'Real' ? 'neutral' : 'quiet'}>{tag}</Badge>
+    <span className="text-xs text-panel-muted">{source}</span>
+    <span className="ml-auto">{children}</span>
+  </div>
+);
+
+const Empty: React.FC<{ error: string | null; text: string }> = ({ error, text }) => (
+  <p className="px-4 py-6 text-[13px] text-panel-muted">{error ? `${error} Nothing to show until the backend answers.` : text}</p>
+);
 
 export const ReportPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'energy' | 'savings' | 'bookings' | 'audit'>('energy');
-  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
-  const [auditTotal, setAuditTotal] = useState<number>(0);
-  const [auditPage, setAuditPage] = useState<number>(1);
+  const [tab, setTab] = useState<Tab>('bills');
+  const [bills, setBills] = useState<MonthlyEnergyRecord[]>([]);
+  const [days, setDays] = useState<DayEnergy[]>([]);
   const [bookings, setBookings] = useState<ExtraClassBooking[]>([]);
+  const [log, setLog] = useState<AuditEntry[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadReportData = async () => {
-      try {
-        const [auditRes, bookRes] = await Promise.all([
-          api.getAuditLog(auditPage, 10),
-          api.getBookings(),
-        ]);
-        setAuditLogs(auditRes.items);
-        setAuditTotal(auditRes.total);
-        setBookings(bookRes);
-      } catch (err) {
-        console.error('Failed to load report data', err);
-      }
-    };
-    loadReportData();
-  }, [auditPage]);
+    const fail = (e: unknown) => setError(errorMessage(e));
+    api.getMonthlyEnergy().then(setBills).catch(fail);
+    pilot.daily(30).then(r => setDays([...r.days].reverse())).catch(fail);
+    api.getBookings().then(b => setBookings([...b].sort((x, y) => (y.date + y.start_time).localeCompare(x.date + x.start_time)))).catch(fail);
+    api.getAuditLog(200).then(setLog).catch(fail);
+  }, []);
 
-  // Historical energy export format
-  const energyExportData = HISTORICAL_ENERGY_DATA.map(r => ({
-    Month: r.month_label,
-    'Grid (kWh)': r.grid_kwh,
-    'Generator (kWh)': r.generator_kwh,
-    'Solar (kWh)': r.solar_kwh,
-    'Total (kWh)': r.total_kwh,
-    'MoM Change (%)': r.mom_change_pct ?? 0,
-  }));
-
-  // Savings audit format
-  const savingsExportData = [
-    { Period: 'Nov 2024 - Dec 2024', 'Hours Avoided': 140, 'kWh Saved': 2100, 'INR Saved': 17850, 'CO2 Abated (kg)': 1722 },
-    { Period: 'Jan 2025 - Feb 2025', 'Hours Avoided': 165, 'kWh Saved': 2475, 'INR Saved': 21037, 'CO2 Abated (kg)': 2029 },
-    { Period: 'Mar 2025 - Apr 2025', 'Hours Avoided': 190, 'kWh Saved': 2850, 'INR Saved': 24225, 'CO2 Abated (kg)': 2337 },
-    { Period: 'May 2025 - Jun 2025', 'Hours Avoided': 210, 'kWh Saved': 3150, 'INR Saved': 26775, 'CO2 Abated (kg)': 2583 },
-  ];
+  const billMax = useMemo(() => Math.max(1, ...bills.map(b => b.total_kwh)), [bills]);
+  const billTotal = useMemo(() => bills.reduce((s, b) => s + b.total_kwh, 0), [bills]);
+  const dayMax = useMemo(() => Math.max(1, ...days.map(d => d.kwh)), [days]);
+  const dayTotals = useMemo(() => days.reduce((s, d) => ({ kwh: s.kwh + d.kwh, waste: s.waste + d.waste_kwh }), { kwh: 0, waste: 0 }), [days]);
 
   return (
-    <div className="space-y-6">
-      {/* Report Section Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-        <div className="flex items-center gap-2">
-          <FileBarChart className="w-5 h-5 text-cyan-400" />
-          <div className="flex flex-wrap gap-1">
-            {[
-              { id: 'energy', label: '1. Historical Energy Records' },
-              { id: 'savings', label: '2. Savings Audit History' },
-              { id: 'bookings', label: '3. Extra Class Logs' },
-              { id: 'audit', label: '4. System Compliance Audit' },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'energy' | 'savings' | 'bookings' | 'audit')}
-                className={`text-xs px-3 py-1.5 rounded-lg transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-800'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="text-xs text-slate-400 font-mono">
-          Manav Rachna University BMS Archives
-        </div>
+    <section className="border border-panel-seam">
+      <div className="flex flex-wrap gap-1 px-4 py-2.5 border-b border-panel-seam" role="tablist" aria-label="Reports">
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => setTab(t.id)}
+            className={`text-xs px-2.5 py-1 rounded-[3px] border snap ${
+              tab === t.id ? 'border-panel-ink bg-panel-seam text-panel-ink' : 'border-panel-seam text-panel-muted hover:border-panel-wire'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* TAB 1: Historical Energy Records */}
-      {activeTab === 'energy' && (
-        <div className="space-y-6">
-          <Card>
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div>
-                <h3 className="text-base font-bold text-white">
-                  Annual Energy Breakdown (Jul 2024 — Jun 2025)
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Exact campus metered consumption from Main Substation and 100 kWp Solar Rooftop
-                </p>
-              </div>
-              <ExportButtons
-                data={energyExportData}
-                filename="green_campus_monthly_energy_jul24_jun25"
-                showPrint
-              />
-            </div>
-
-            <EnergyStackedBar data={HISTORICAL_ENERGY_DATA} height={320} />
-          </Card>
-
-          <Card padding="none" className="overflow-hidden">
-            <div className="p-4 border-b border-slate-800 bg-slate-900/90 flex justify-between items-center">
-              <span className="text-sm font-semibold text-white">Historical Monthly Dataset</span>
-              <span className="text-xs text-slate-400 font-mono">12 Monthly Records Verified</span>
-            </div>
+      {tab === 'bills' && (
+        <div role="tabpanel">
+          <Head title={`Campus electricity · ${bills.length} months`} tag="Real" source="Monthly bills for the whole campus. Not a measurement of L Block or this floor.">
+            <ExportButtons
+              filename="campus_monthly_energy"
+              data={bills.map(b => ({ Month: b.month_label, 'Grid kWh': b.grid_kwh, 'Diesel generator kWh': b.generator_kwh, 'Solar kWh': b.solar_kwh, 'Total kWh': b.total_kwh }))}
+            />
+          </Head>
+          {bills.length === 0 ? <Empty error={error} text="No billing months are loaded." /> : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
-                  <tr>
-                    <th className="py-2.5 px-4">Billing Month</th>
-                    <th className="py-2.5 px-4 text-right">Grid Power (kWh)</th>
-                    <th className="py-2.5 px-4 text-right">Diesel Gen (kWh)</th>
-                    <th className="py-2.5 px-4 text-right">Solar Gen (kWh)</th>
-                    <th className="py-2.5 px-4 text-right">Total (kWh)</th>
-                    <th className="py-2.5 px-4 text-right">MoM Change</th>
+              <table className="w-full text-xs min-w-[760px]">
+                <thead>
+                  <tr className="text-left text-[11px] text-panel-muted">
+                    <th className={th}>Month</th>
+                    <th className={`${th} text-right`}>Grid kWh</th>
+                    <th className={`${th} text-right`}>Diesel kWh</th>
+                    <th className={`${th} text-right`}>Solar kWh</th>
+                    <th className={`${th} text-right`}>Total kWh</th>
+                    <th className={`${th} text-right`}>vs prev.</th>
+                    <th className={`${th} w-[28%]`}>Supply mix</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60 font-mono">
-                  {HISTORICAL_ENERGY_DATA.map(rec => (
-                    <tr key={rec.id} className="hover:bg-slate-800/40">
-                      <td className="py-2.5 px-4 font-sans font-medium text-slate-200">
-                        {rec.month_label}
+                <tbody className="num">
+                  {bills.map(b => (
+                    <tr key={b.id} className="border-t border-panel-seam">
+                      <td className={`${td} font-sans`}>{b.month_label}</td>
+                      <td className={`${td} text-right`}>{n0(b.grid_kwh)}</td>
+                      <td className={`${td} text-right`}>{n0(b.generator_kwh)}</td>
+                      <td className={`${td} text-right`}>{n0(b.solar_kwh)}</td>
+                      <td className={`${td} text-right font-semibold`}>{n0(b.total_kwh)}</td>
+                      <td className={`${td} text-right text-panel-muted`}>
+                        {b.mom_change_pct === undefined ? '—' : `${b.mom_change_pct > 0 ? '+' : ''}${b.mom_change_pct.toFixed(1)}%`}
                       </td>
-                      <td className="py-2.5 px-4 text-right text-cyan-300">
-                        {formatNumberWithCommas(rec.grid_kwh)}
+                      <td className={td}>
+                        <div className="flex h-2.5" style={{ width: `${(b.total_kwh / billMax) * 100}%` }} aria-hidden>
+                          <span className="bg-panel-ink" style={{ flex: b.grid_kwh }} />
+                          <span className="bg-panel-muted" style={{ flex: b.generator_kwh }} />
+                          <span className="bg-panel-wire" style={{ flex: b.solar_kwh }} />
+                        </div>
                       </td>
-                      <td className="py-2.5 px-4 text-right text-purple-300">
-                        {formatNumberWithCommas(rec.generator_kwh)}
-                      </td>
-                      <td className="py-2.5 px-4 text-right text-emerald-400">
-                        {formatNumberWithCommas(rec.solar_kwh)}
-                      </td>
-                      <td className="py-2.5 px-4 text-right text-white font-bold">
-                        {formatNumberWithCommas(rec.total_kwh)}
-                      </td>
-                      <td className="py-2.5 px-4 text-right">
-                        {rec.mom_change_pct !== undefined ? (
-                          <span
-                            className={
-                              rec.mom_change_pct > 0
-                                ? 'text-amber-400'
-                                : rec.mom_change_pct < 0
-                                ? 'text-emerald-400'
-                                : 'text-slate-400'
-                            }
-                          >
-                            {rec.mom_change_pct > 0 ? `+${rec.mom_change_pct}%` : `${rec.mom_change_pct}%`}
-                          </span>
-                        ) : (
-                          '—'
-                        )}
+                    </tr>
+                  ))}
+                  <tr className="border-t border-panel-wire">
+                    <td className={`${td} font-sans text-panel-muted`}>Total</td>
+                    <td className={`${td} text-right`}>{n0(bills.reduce((s, b) => s + b.grid_kwh, 0))}</td>
+                    <td className={`${td} text-right`}>{n0(bills.reduce((s, b) => s + b.generator_kwh, 0))}</td>
+                    <td className={`${td} text-right`}>{n0(bills.reduce((s, b) => s + b.solar_kwh, 0))}</td>
+                    <td className={`${td} text-right font-semibold`}>{n0(billTotal)}</td>
+                    <td className={td} />
+                    <td className={td}>
+                      <span className="flex flex-wrap gap-3 font-sans text-[11px] text-panel-muted">
+                        <span className="flex items-center gap-1"><span className="w-3 h-2.5 bg-panel-ink" />Grid</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-2.5 bg-panel-muted" />Diesel</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-2.5 bg-panel-wire" />Solar</span>
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'floor' && (
+        <div role="tabpanel">
+          <Head title="L Block 2nd floor · daily kWh" tag="Simulated" source="Modelled from the device inventory, timetable and bookings. No meter is fitted.">
+            <ExportButtons
+              filename="floor_daily_energy_simulated"
+              data={days.map(d => ({ Date: d.date, 'kWh (simulated)': d.kwh, 'Into empty rooms kWh (simulated)': d.waste_kwh }))}
+            />
+          </Head>
+          {days.length === 0 ? <Empty error={error} text="No days modelled yet." /> : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs min-w-[600px]">
+                <thead>
+                  <tr className="text-left text-[11px] text-panel-muted">
+                    <th className={th}>Day</th>
+                    <th className={`${th} text-right`}>kWh</th>
+                    <th className={`${th} text-right`}>Into empty rooms</th>
+                    <th className={`${th} text-right`}>Share</th>
+                    <th className={`${th} w-[36%]`}>
+                      <span className="flex gap-3">
+                        <span className="flex items-center gap-1"><span className="w-3 h-2.5 bg-panel-wire" />Used</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-2.5 bg-chart-saved" />Into empty rooms</span>
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="num">
+                  {days.map(d => {
+                    const wk = new Date(`${d.date}T12:00:00`).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+                    return (
+                      <tr key={d.date} className="border-t border-panel-seam">
+                        <td className={`${td} font-sans`}>{wk}</td>
+                        <td className={`${td} text-right`}>{d.kwh.toFixed(1)}</td>
+                        <td className={`${td} text-right ${d.waste_kwh > 0 ? 'text-waste' : 'text-panel-muted'}`}>{d.waste_kwh.toFixed(1)}</td>
+                        <td className={`${td} text-right text-panel-muted`}>{d.kwh ? `${((d.waste_kwh / d.kwh) * 100).toFixed(0)}%` : '—'}</td>
+                        <td className={td}>
+                          <div className="flex h-2.5" style={{ width: `${(d.kwh / dayMax) * 100}%` }} aria-hidden>
+                            <span className="bg-panel-wire" style={{ flex: Math.max(0, d.kwh - d.waste_kwh) }} />
+                            <span className="bg-chart-saved" style={{ flex: d.waste_kwh }} />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  <tr className="border-t border-panel-wire">
+                    <td className={`${td} font-sans text-panel-muted`}>{days.length} days</td>
+                    <td className={`${td} text-right font-semibold`}>{dayTotals.kwh.toFixed(1)}</td>
+                    <td className={`${td} text-right font-semibold text-waste`}>{dayTotals.waste.toFixed(1)}</td>
+                    <td className={`${td} text-right text-panel-muted`}>{dayTotals.kwh ? `${((dayTotals.waste / dayTotals.kwh) * 100).toFixed(0)}%` : '—'}</td>
+                    <td className={td} />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'bookings' && (
+        <div role="tabpanel">
+          <Head title={`Extra classes · ${bookings.length}`} tag="Real" source="Every booking made from this console, newest first.">
+            <ExportButtons
+              filename="extra_class_bookings"
+              data={bookings.map(b => ({ Room: b.classroom_name, Date: b.date, Start: b.start_time, End: b.end_time, Subject: b.subject, Students: b.expected_students, Status: b.status, 'Booked at': b.created_at }))}
+            />
+          </Head>
+          {bookings.length === 0 ? <Empty error={error} text="No extra classes have been booked." /> : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs min-w-[720px]">
+                <thead>
+                  <tr className="text-left text-[11px] text-panel-muted">
+                    <th className={th}>Room</th>
+                    <th className={th}>Date</th>
+                    <th className={th}>Time</th>
+                    <th className={th}>Subject</th>
+                    <th className={`${th} text-right`}>Students</th>
+                    <th className={th}>Status</th>
+                    <th className={th}>Booked</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bookings.map(b => (
+                    <tr key={b.id} className={`border-t border-panel-seam ${b.status === 'ACTIVE' ? '' : 'text-panel-muted'}`}>
+                      <td className={`${td} num font-semibold`}>{b.classroom_name}</td>
+                      <td className={`${td} num`}>{b.date}</td>
+                      <td className={`${td} num`}>{b.start_time}–{b.end_time}</td>
+                      <td className={td}>{b.subject || '—'}</td>
+                      <td className={`${td} num text-right`}>{b.expected_students ?? '—'}</td>
+                      <td className={td}><Badge variant={b.status === 'ACTIVE' ? 'neutral' : 'quiet'}>{b.status === 'ACTIVE' ? 'Active' : 'Cancelled'}</Badge></td>
+                      <td className={`${td} text-panel-muted`}>{formatDateTime(b.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'log' && (
+        <div role="tabpanel">
+          <Head title={`Change log · latest ${log.length}`} tag="Real" source="Bookings, switch overrides, settings and no-show tests, as recorded by the backend.">
+            <ExportButtons
+              filename="change_log"
+              data={log.map(a => ({ When: a.created_at, Entity: a.entity_type, 'Entity ID': a.entity_id, Action: a.action, By: a.actor, Details: JSON.stringify(a.details) }))}
+            />
+          </Head>
+          {log.length === 0 ? <Empty error={error} text="Nothing has been recorded yet." /> : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs min-w-[760px]">
+                <thead>
+                  <tr className="text-left text-[11px] text-panel-muted">
+                    <th className={th}>When</th>
+                    <th className={th}>What</th>
+                    <th className={th}>ID</th>
+                    <th className={th}>By</th>
+                    <th className={`${th} w-[40%]`}>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {log.map(a => (
+                    <tr key={a.id} className="border-t border-panel-seam align-top">
+                      <td className={`${td} text-panel-muted whitespace-nowrap`}>{formatDateTime(a.created_at)}</td>
+                      <td className={td}>{a.entity_type.toLowerCase().replace(/_/g, ' ')} · {a.action.toLowerCase().replace(/_/g, ' ')}</td>
+                      <td className={`${td} num`}>{a.entity_id || '—'}</td>
+                      <td className={`${td} text-panel-muted`}>{a.actor}</td>
+                      <td className={`${td} num text-[11px] text-panel-muted`}>
+                        <span className="line-clamp-2 break-all">
+                          {Object.entries(a.details).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`).join(' · ') || '—'}
+                        </span>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </Card>
+          )}
         </div>
       )}
-
-      {/* TAB 2: Savings Audit History */}
-      {activeTab === 'savings' && (
-        <Card padding="none" className="overflow-hidden">
-          <div className="p-4 border-b border-slate-800 bg-slate-900/90 flex justify-between items-center">
-            <div>
-              <h3 className="text-sm font-semibold text-white">Automated BMS Savings Log</h3>
-              <p className="text-xs text-slate-400">Energy cutoffs tracked via timetable integration</p>
-            </div>
-            <ExportButtons
-              data={savingsExportData}
-              filename="green_campus_savings_audit_log"
-            />
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Period</th>
-                  <th className="py-3 px-4 text-right">Vacant Hours Avoided</th>
-                  <th className="py-3 px-4 text-right">Energy Saved (kWh)</th>
-                  <th className="py-3 px-4 text-right">Cost Saved (₹)</th>
-                  <th className="py-3 px-4 text-right">CO₂ Abated (kg)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono">
-                {savingsExportData.map((s, idx) => (
-                  <tr key={idx} className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-sans font-medium text-slate-200">{s.Period}</td>
-                    <td className="py-3 px-4 text-right text-slate-300">{s['Hours Avoided']} hrs</td>
-                    <td className="py-3 px-4 text-right text-cyan-300 font-semibold">
-                      {formatNumberWithCommas(s['kWh Saved'])} kWh
-                    </td>
-                    <td className="py-3 px-4 text-right text-emerald-400 font-bold">
-                      ₹{formatNumberWithCommas(s['INR Saved'])}
-                    </td>
-                    <td className="py-3 px-4 text-right text-amber-300">
-                      {formatNumberWithCommas(s['CO2 Abated (kg)'])} kg
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {/* TAB 3: Extra Class Bookings */}
-      {activeTab === 'bookings' && (
-        <Card padding="none" className="overflow-hidden">
-          <div className="p-4 border-b border-slate-800 bg-slate-900/90 flex justify-between items-center">
-            <div>
-              <h3 className="text-sm font-semibold text-white">Extra Class Reservation Ledger</h3>
-              <p className="text-xs text-slate-400">Recorded faculty override requests for automated HVAC</p>
-            </div>
-            <ExportButtons
-              data={bookings.map(b => ({
-                Room: b.classroom_name,
-                Date: b.date,
-                'Start Time': b.start_time,
-                'End Time': b.end_time,
-                Subject: b.subject,
-                Students: b.expected_students,
-                Status: b.status,
-                'Created At': b.created_at,
-              }))}
-              filename="green_campus_extra_class_bookings"
-            />
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Room</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Time Slot</th>
-                  <th className="py-3 px-4">Subject</th>
-                  <th className="py-3 px-4 text-right">Students</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Booked At</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {bookings.map(b => (
-                  <tr key={b.id} className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-bold text-cyan-300 font-mono">
-                      {b.classroom_name || `Room ${b.classroom_id}`}
-                    </td>
-                    <td className="py-3 px-4 text-slate-200">{b.date}</td>
-                    <td className="py-3 px-4 font-mono text-slate-300">
-                      {b.start_time} - {b.end_time}
-                    </td>
-                    <td className="py-3 px-4 font-medium text-slate-100">{b.subject || '—'}</td>
-                    <td className="py-3 px-4 text-right font-mono text-slate-300">
-                      {b.expected_students || '—'}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                          b.status === 'ACTIVE'
-                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                            : 'bg-slate-800 text-slate-400'
-                        }`}
-                      >
-                        {b.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-slate-400 text-[11px]">
-                      {formatDateTime(b.created_at)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {/* TAB 4: Audit Log Viewer */}
-      {activeTab === 'audit' && (
-        <Card padding="none" className="overflow-hidden">
-          <div className="p-4 border-b border-slate-800 bg-slate-900/90 flex justify-between items-center">
-            <div>
-              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                <span>Security & Compliance Audit Trail</span>
-              </h3>
-              <p className="text-xs text-slate-400">Immutable ledger of all automated and manual actions</p>
-            </div>
-            <ExportButtons
-              data={auditLogs.map(a => ({
-                ID: a.id,
-                Entity: a.entity_type,
-                'Entity ID': a.entity_id,
-                Action: a.action,
-                Actor: a.actor,
-                Timestamp: a.created_at,
-              }))}
-              filename="green_campus_system_audit_log"
-            />
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Timestamp</th>
-                  <th className="py-3 px-4">Entity Type</th>
-                  <th className="py-3 px-4">Entity ID</th>
-                  <th className="py-3 px-4">Action</th>
-                  <th className="py-3 px-4">Actor</th>
-                  <th className="py-3 px-4">Payload Details</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono">
-                {auditLogs.map(log => (
-                  <tr key={log.id} className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 text-slate-400 font-sans text-[11px]">
-                      {formatDateTime(log.created_at)}
-                    </td>
-                    <td className="py-3 px-4 text-cyan-400">{log.entity_type}</td>
-                    <td className="py-3 px-4 text-slate-200 font-bold">{log.entity_id}</td>
-                    <td className="py-3 px-4 text-amber-300">{log.action}</td>
-                    <td className="py-3 px-4 text-slate-300 font-sans">{log.actor}</td>
-                    <td className="py-3 px-4 text-slate-400 text-[10px] max-w-xs truncate">
-                      {JSON.stringify(log.details)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="p-3 border-t border-slate-800 bg-slate-950 flex items-center justify-between text-xs text-slate-400">
-            <span>
-              Showing Page {auditPage} • Total {auditTotal} Logged Events
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={auditPage <= 1}
-                onClick={() => setAuditPage(p => p - 1)}
-                className="p-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                disabled={auditPage * 10 >= auditTotal}
-                onClick={() => setAuditPage(p => p + 1)}
-                className="p-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </Card>
-      )}
-    </div>
+    </section>
   );
 };

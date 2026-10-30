@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Green Campus AI - Manav Rachna University"
     APP_VERSION: str = "1.0.0"
     DEMO_MODE: bool = True
+    APP_TIMEZONE: str = "Asia/Kolkata"
     DATABASE_URL: str = "sqlite:///./greencampus.db"
     
     # CORS allowed origins

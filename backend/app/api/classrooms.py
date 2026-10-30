@@ -5,8 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import Classroom, DeviceState
-from app.schemas.schemas import ClassroomOut, ClassroomStatusOut
+import json
+from datetime import timezone
+from app.models.models import AuditLog
+from app.schemas.schemas import ClassroomOut, ClassroomStatusOut, DeviceStateOut, DeviceStateUpdate
 from app.services.timetable_service import get_occupancy_status, parse_time_str
+from app.clock import now_local
 
 router = APIRouter(prefix="/classrooms", tags=["Classrooms"])
 
@@ -49,7 +53,7 @@ def get_classroom_status(
             detail=f"Classroom with ID {classroom_id} not found",
         )
 
-    now = datetime.now()
+    now = now_local()
     target_date = date or now.date()
     
     # Determine weekday code
@@ -80,3 +84,25 @@ def get_classroom_status(
         db=db,
     )
     return status_data
+
+
+@router.post("/{classroom_id}/device-state", response_model=DeviceStateOut)
+def set_device_state(classroom_id: int, payload: DeviceStateUpdate, db: Session = Depends(get_db)):
+    """Admin override of a room's AC / fans / lights group (simulated until relays exist; applies for today)."""
+    if not db.get(Classroom, classroom_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Classroom {classroom_id} not found")
+    state = db.query(DeviceState).filter(DeviceState.classroom_id == classroom_id).first()
+    if not state:
+        state = DeviceState(classroom_id=classroom_id)
+        db.add(state)
+    data = payload.model_dump(exclude_unset=True)
+    for key in ("ac_on", "fan_on", "lights_on"):
+        if data.get(key) is not None:
+            setattr(state, key, data[key])
+    state.source = (data.get("source") or "OVERRIDE").upper()
+    state.updated_at = datetime.now(timezone.utc)
+    db.add(AuditLog(entity_type="DEVICE_STATE", entity_id=str(classroom_id), action="UPDATE", actor="admin",
+                    details_json=json.dumps(data, default=str)))
+    db.commit()
+    db.refresh(state)
+    return state

@@ -102,6 +102,8 @@ class ExtraClassBooking(Base):
     expected_students = Column(Integer, default=30, nullable=False)
     notes = Column(Text, nullable=True)
     status = Column(String(20), default="ACTIVE", nullable=False)  # ACTIVE, CANCELLED
+    source = Column(String(20), default="MANUAL", nullable=True)  # MANUAL, AUTO
+    requested_by = Column(String(100), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -221,3 +223,88 @@ class Setting(Base):
     value = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+# -----------------------------------------------------------------------------
+# Building inventory: Building -> Floor -> Space -> Asset
+# -----------------------------------------------------------------------------
+
+class Building(Base):
+    """A campus building, e.g. L Block."""
+
+    __tablename__ = "buildings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(20), unique=True, nullable=False)
+    name = Column(String(100), nullable=False)
+
+    floors = relationship("Floor", back_populates="building", cascade="all, delete-orphan", order_by="Floor.level")
+
+
+class Floor(Base):
+    """One floor of a building. Map width/height are in layout grid units."""
+
+    __tablename__ = "floors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    building_id = Column(Integer, ForeignKey("buildings.id"), nullable=False, index=True)
+    level = Column(Integer, nullable=False)
+    name = Column(String(100), nullable=False)
+    is_pilot = Column(Boolean, default=False, nullable=False)
+    map_width = Column(Integer, default=24, nullable=False)
+    map_height = Column(Integer, default=10, nullable=False)
+    notes = Column(Text, nullable=True)
+
+    building = relationship("Building", back_populates="floors")
+    spaces = relationship("Space", back_populates="floor", cascade="all, delete-orphan", order_by="Space.code")
+
+
+class Space(Base):
+    """A room or common area on a floor. Classrooms link to the timetable via classroom_id."""
+
+    __tablename__ = "spaces"
+
+    id = Column(Integer, primary_key=True, index=True)
+    floor_id = Column(Integer, ForeignKey("floors.id"), nullable=False, index=True)
+    code = Column(String(30), nullable=False)
+    name = Column(String(100), nullable=False)
+    kind = Column(String(20), default="CLASSROOM", nullable=False)  # CLASSROOM, LAB, STAFF_ROOM, CORRIDOR, WASHROOM, COMMON, OTHER
+    capacity = Column(Integer, nullable=True)
+    bookable = Column(Boolean, default=False, nullable=False)
+    classroom_id = Column(Integer, ForeignKey("classrooms.id"), nullable=True, unique=True)
+    # Floor map rectangle in grid units
+    map_x = Column(Integer, default=0, nullable=False)
+    map_y = Column(Integer, default=0, nullable=False)
+    map_w = Column(Integer, default=4, nullable=False)
+    map_h = Column(Integer, default=3, nullable=False)
+    notes = Column(Text, nullable=True)
+    # Local time an admin cut this space's loads; while armed (same day) controllable
+    # devices stay off whenever the space is empty.
+    cut_at = Column(DateTime, nullable=True)
+
+    floor = relationship("Floor", back_populates="spaces")
+    classroom = relationship("Classroom")
+    assets = relationship("Asset", back_populates="space", cascade="all, delete-orphan", order_by="Asset.id")
+
+
+class Asset(Base):
+    """A group of identical power-consuming devices in a space (e.g. 12 x LED panel 36 W)."""
+
+    __tablename__ = "assets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    space_id = Column(Integer, ForeignKey("spaces.id"), nullable=False, index=True)
+    device_type = Column(String(30), nullable=False)  # key into DEVICE_TYPES catalogue
+    category = Column(String(20), nullable=False)  # HVAC, FAN, LIGHTING, AV, IT, APPLIANCE, OTHER
+    name = Column(String(100), nullable=False)
+    quantity = Column(Integer, default=1, nullable=False)
+    rated_power_w = Column(Float, nullable=False)
+    standby_power_w = Column(Float, default=0.0, nullable=False)
+    controllable = Column(Boolean, default=True, nullable=False)
+    spec_status = Column(String(20), default="ESTIMATED", nullable=False)  # ESTIMATED, VERIFIED
+    make_model = Column(String(150), nullable=True)
+    sensor_id = Column(String(100), nullable=True)  # future: hardware channel that reports on/off
+    notes = Column(Text, nullable=True)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    space = relationship("Space", back_populates="assets")

@@ -1,182 +1,130 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTimetable } from '../hooks/useTimetable';
 import { useBookings } from '../hooks/useBookings';
-import { useSimulations } from '../hooks/useSimulations';
 import { useLiveClock } from '../hooks/useLiveClock';
 import { TimetableGrid } from '../components/timetable/TimetableGrid';
 import { WeekdaySelector } from '../components/timetable/WeekdaySelector';
-import { TimetableEntry } from '../types';
-import { Weekday } from '../utils/timeUtils';
-import { Calendar, Filter, Sparkles } from 'lucide-react';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { api } from '../services/api';
+import { errorMessage } from '../services/pilot';
+import { Classroom } from '../types';
+import { WEEKDAYS, Weekday } from '../utils/timeUtils';
+
+const iso = (d: Date) => d.toLocaleDateString('en-CA');
+const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+
+/** Mon–Fri dates of this teaching week (next week's on a weekend). */
+function weekDates(): Record<Weekday, string> {
+  const d = new Date();
+  const dow = d.getDay(); // 0 Sun … 6 Sat
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + (dow === 0 ? 1 : dow === 6 ? 2 : 1 - dow));
+  return Object.fromEntries(
+    WEEKDAYS.map((day, i) => {
+      const x = new Date(monday);
+      x.setDate(monday.getDate() + i);
+      return [day, iso(x)];
+    })
+  ) as Record<Weekday, string>;
+}
 
 export const Timetable: React.FC = () => {
   const clock = useLiveClock();
-  const [selectedDay, setSelectedDay] = useState<Weekday>('Thursday');
-  const [classroomFilter, setClassroomFilter] = useState<number | 'ALL'>('ALL');
-  const [notification, setNotification] = useState<string | null>(null);
+  const dates = useMemo(weekDates, []);
+  const todayName = (WEEKDAYS as readonly string[]).includes(clock.weekday) ? (clock.weekday as Weekday) : undefined;
+  const [day, setDay] = useState<Weekday>(todayName ?? 'Monday');
+  const [roomFilter, setRoomFilter] = useState<number | 'ALL'>('ALL');
+  const [rooms, setRooms] = useState<Classroom[]>([]);
+  const [roomsError, setRoomsError] = useState<string | null>(null);
 
-  const { entries, periods, currentPeriod, isLoading } = useTimetable(selectedDay);
-  const { bookings, isLoading: bookingsLoading } = useBookings();
-  const { triggerNoShow } = useSimulations();
+  const { entries, periods, isLoading, error } = useTimetable(day);
+  const { bookings } = useBookings();
 
-  const timetableEntries = useMemo(() => {
-    const toMinutes = (time: string) => {
-      const [hours, minutes] = time.split(':').map(Number);
-      return hours * 60 + minutes;
-    };
+  useEffect(() => {
+    api.listClassrooms().then(setRooms).catch(e => setRoomsError(errorMessage(e)));
+  }, []);
 
-    const bookingEntries: TimetableEntry[] = bookings
-      .filter(booking => {
-        const bookingDay = new Intl.DateTimeFormat('en-IN', {
-          weekday: 'long',
-          timeZone: 'Asia/Kolkata',
-        }).format(new Date(`${booking.date}T12:00:00+05:30`));
-        return booking.status === 'ACTIVE' && bookingDay === selectedDay;
-      })
-      .flatMap(booking =>
-        periods
-          .filter(period => {
-            if (period.is_break) return false;
-            return (
-              toMinutes(booking.start_time) < toMinutes(period.end_time) &&
-              toMinutes(booking.end_time) > toMinutes(period.start_time)
-            );
-          })
-          .map(period => ({
-            id: -booking.id * 100 - Number(period.period_number.replace('P', '')),
-            classroom_id: booking.classroom_id,
-            day_of_week: selectedDay,
-            period_number: period.period_number,
-            start_time: booking.start_time,
-            end_time: booking.end_time,
-            subject: booking.subject || 'Extra Class Booking',
-            teacher: 'Extra Class Booking',
-            section: 'EXTRA',
-          }))
-      );
+  const date = dates[day];
+  const dayBookings = useMemo(() => bookings.filter(b => b.status === 'ACTIVE' && b.date === date), [bookings, date]);
+  const shownRooms = roomFilter === 'ALL' ? rooms : rooms.filter(r => r.id === roomFilter);
 
-    return [...entries, ...bookingEntries];
-  }, [bookings, entries, periods, selectedDay]);
+  // clock re-renders every second; read the 24 h time directly.
+  const nowMin = toMin(new Date().toTimeString().slice(0, 5));
+  const currentPeriod =
+    date === iso(new Date())
+      ? periods.find(p => nowMin >= toMin(p.start_time) && nowMin < toMin(p.end_time))?.period_number ?? null
+      : null;
 
-  const handleSimulateNoShow = async (classroomId: number, periodLabel: string) => {
-    try {
-      await triggerNoShow(classroomId, periodLabel, 180);
-      setNotification(`Cutoff simulation active for room during ${periodLabel}. Countdown started.`);
-      setTimeout(() => setNotification(null), 5000);
-    } catch {
-      setNotification('Failed to trigger simulation.');
-    }
-  };
-
-  const allClassrooms = [
-    { id: 1, name: 'LS-03', capacity: 65, connected_load_kw: 4.5 },
-    { id: 2, name: 'LS-04', capacity: 60, connected_load_kw: 4.5 },
-    { id: 3, name: 'LS-08', capacity: 70, connected_load_kw: 5.2 },
-    { id: 4, name: 'LS-09', capacity: 65, connected_load_kw: 4.8 },
-    { id: 5, name: 'LS-10', capacity: 75, connected_load_kw: 5.5 },
-  ];
-
-  const displayedClassrooms =
-    classroomFilter === 'ALL'
-      ? allClassrooms
-      : allClassrooms.filter(c => c.id === classroomFilter);
+  const classCount = entries.filter(e => shownRooms.some(r => r.id === e.classroom_id)).length;
+  const dateLabel = new Date(`${date}T12:00:00`).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+  const failed = error || roomsError;
 
   return (
-    <div className="space-y-6">
-      {/* Toast Notification */}
-      {notification && (
-        <div className="p-3.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs flex items-center justify-between animate-fade-in shadow-md">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span className="font-semibold">{notification}</span>
-          </div>
-          <button onClick={() => setNotification(null)} className="underline text-slate-400">
-            Dismiss
-          </button>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="p-4 space-y-4">
+      <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <Calendar className="w-6 h-6 text-cyan-400" />
-            <span>Academic Timetable & Automation Matrix</span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Master schedule linked directly to building HVAC pre-cooling and occupancy verification cutoffs.
+          <h1 className="text-[17px] font-semibold">Timetable</h1>
+          <p className="text-xs text-panel-muted max-w-xl">
+            Classes for the bookable rooms, periods 1–10, with this week's extra-class bookings laid over them.
+            The floor panel uses this to tell an empty room from one in use.
           </p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-mono bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg">
-            Active Period: <span className="text-cyan-400 font-bold">{currentPeriod ? currentPeriod.label : 'Outside Class Hours'}</span>
-          </span>
-        </div>
+        <dl className="flex gap-6 text-xs">
+          <div>
+            <dt className="section-title">Classes</dt>
+            <dd className="num text-[15px] font-semibold">{classCount}</dd>
+          </div>
+          <div>
+            <dt className="section-title">Extra classes</dt>
+            <dd className="num text-[15px] font-semibold">{dayBookings.length}</dd>
+          </div>
+        </dl>
+        <Link to="/book" className="ml-auto text-xs border border-panel-wire hover:border-panel-ink px-3 py-1.5 rounded-[3px] snap">
+          Book extra class
+        </Link>
       </div>
 
-      {/* Filters & Weekdays Bar */}
-      <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 backdrop-blur-md flex flex-wrap items-center justify-between gap-4">
-        <WeekdaySelector
-          selectedDay={selectedDay}
-          onSelectDay={setSelectedDay}
-          currentDayName={clock.weekday}
-        />
+      <section className="border border-panel-seam" aria-label={`Timetable for ${dateLabel}`}>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 border-b border-panel-seam">
+          <h2 className="section-title mr-1">{dateLabel}</h2>
+          <WeekdaySelector selectedDay={day} onSelectDay={setDay} todayName={todayName} dates={dates} />
+          <div className="flex flex-wrap gap-1" role="group" aria-label="Rooms shown">
+            {[{ id: 'ALL' as const, name: 'All rooms' }, ...rooms].map(r => {
+              const on = roomFilter === r.id;
+              return (
+                <button
+                  key={r.id}
+                  aria-pressed={on}
+                  onClick={() => setRoomFilter(r.id)}
+                  className={`text-xs px-2.5 py-1 rounded-[3px] border snap ${r.id === 'ALL' ? '' : 'num'} ${
+                    on ? 'border-panel-ink bg-panel-seam text-panel-ink' : 'border-panel-seam text-panel-muted hover:border-panel-wire'
+                  }`}
+                >
+                  {r.name}
+                </button>
+              );
+            })}
+          </div>
+          {failed && <span className="text-xs text-lamp-on">{failed}</span>}
+        </div>
 
-        {/* Room Filter Dropdown */}
-        <div className="flex items-center gap-2 text-xs">
-          <Filter className="w-4 h-4 text-slate-400" />
-          <span className="text-slate-300 font-medium">Show Rooms:</span>
-          <select
-            value={classroomFilter}
-            onChange={e =>
-              setClassroomFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))
-            }
-            className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 font-medium focus:outline-none focus:border-cyan-500"
-          >
-            <option value="ALL">All Classrooms (5 Rooms)</option>
-            {allClassrooms.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.name} (Cap: {c.capacity})
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+        {isLoading && entries.length === 0 ? (
+          <div className="bg-panel-raised/40 h-80" aria-busy="true" aria-label="Loading timetable" />
+        ) : rooms.length === 0 ? (
+          <p className="px-4 py-6 text-[13px] text-panel-muted">
+            {failed ? 'The backend is not reachable, so the timetable cannot be shown.' : 'No bookable rooms are set up yet.'}
+          </p>
+        ) : (
+          <TimetableGrid entries={entries} bookings={dayBookings} periods={periods} rooms={shownRooms} currentPeriod={currentPeriod} />
+        )}
 
-      {/* Timetable Grid Component */}
-      {isLoading || bookingsLoading ? (
-        <LoadingSpinner text="Retrieving ERP timetable schedule..." />
-      ) : (
-        <TimetableGrid
-          entries={timetableEntries}
-          periods={periods}
-          classrooms={displayedClassrooms}
-          activePeriodNumber={currentPeriod?.period_number}
-          onSimulateNoShow={handleSimulateNoShow}
-        />
-      )}
-
-      {/* Timetable Legend and Info */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-        <div className="p-3 bg-slate-900/40 rounded-xl border border-slate-800 flex items-center gap-2.5">
-          <div className="w-3.5 h-3.5 rounded bg-cyan-500/20 border border-cyan-500/50" />
-          <span className="text-slate-300">Scheduled Occupied (HVAC Auto-On)</span>
+        <div className="flex flex-wrap gap-4 px-4 py-2 border-t border-panel-seam text-xs text-panel-muted">
+          <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 border border-panel-seam" />Timetabled class</span>
+          <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-panel-wire" />Extra class</span>
+          <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-[repeating-linear-gradient(135deg,#3A414D_0_2px,transparent_2px_5px)]" />Lunch</span>
+          <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-panel-raised border border-panel-seam" />Period running now</span>
         </div>
-        <div className="p-3 bg-slate-900/40 rounded-xl border border-slate-800 flex items-center gap-2.5">
-          <div className="w-3.5 h-3.5 rounded bg-slate-800 border border-slate-700" />
-          <span className="text-slate-300">Vacant Period (All Power Off)</span>
-        </div>
-        <div className="p-3 bg-slate-900/40 rounded-xl border border-slate-800 flex items-center gap-2.5">
-          <div className="w-3.5 h-3.5 rounded bg-amber-500/20 border border-amber-500/50" />
-          <span className="text-slate-300">Campus Lunch Break (Eco Standby)</span>
-        </div>
-        <div className="p-3 bg-slate-900/40 rounded-xl border border-slate-800 flex items-center gap-2.5">
-          <div className="w-3.5 h-3.5 rounded bg-purple-500/20 border border-purple-500/50" />
-          <span className="text-slate-300">Extra Class Booking (Manual Override)</span>
-        </div>
-      </div>
+      </section>
     </div>
   );
 };

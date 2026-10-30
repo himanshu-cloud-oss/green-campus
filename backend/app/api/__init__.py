@@ -8,6 +8,8 @@ from app.api.alerts import router as alerts_router
 from app.api.savings import router as savings_router
 from app.api.forecast import router as forecast_router
 from app.api.audit import router as audit_router
+from app.api.inventory import router as inventory_router
+from app.api.telemetry import router as telemetry_router
 
 __all__ = [
     "classrooms_router",
@@ -19,4 +21,6 @@ __all__ = [
     "savings_router",
     "forecast_router",
     "audit_router",
+    "inventory_router",
+    "telemetry_router",
 ]

@@ -105,7 +105,7 @@ export const EnergyAnalytics: React.FC = () => {
       {/* 5 KPI Cards Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
         {/* KPI 1: Total Annual */}
-        <Card glow="cyan" padding="sm" className="space-y-1">
+        <Card padding="sm" className="space-y-1">
           <span className="text-[11px] font-semibold text-slate-400">Total Consumption</span>
           <div className="text-xl font-bold font-mono text-white">
             {formatNumberWithCommas(summary.total_all)} <span className="text-xs font-normal text-slate-400">kWh</span>
@@ -116,7 +116,7 @@ export const EnergyAnalytics: React.FC = () => {
         </Card>
 
         {/* KPI 2: Peak Month */}
-        <Card glow="amber" padding="sm" className="space-y-1">
+        <Card padding="sm" className="space-y-1">
           <span className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
             <span>Peak Demand Month</span>
             <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
@@ -130,7 +130,7 @@ export const EnergyAnalytics: React.FC = () => {
         </Card>
 
         {/* KPI 3: Lowest Month */}
-        <Card glow="green" padding="sm" className="space-y-1">
+        <Card padding="sm" className="space-y-1">
           <span className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
             <span>Lowest Month</span>
             <TrendingDown className="w-3.5 h-3.5 text-emerald-400" />
@@ -144,7 +144,7 @@ export const EnergyAnalytics: React.FC = () => {
         </Card>
 
         {/* KPI 4: Solar Contribution */}
-        <Card glow="green" padding="sm" className="space-y-1">
+        <Card padding="sm" className="space-y-1">
           <span className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
             <span>Solar Generation</span>
             <Sun className="w-3.5 h-3.5 text-emerald-400" />
@@ -158,7 +158,7 @@ export const EnergyAnalytics: React.FC = () => {
         </Card>
 
         {/* KPI 5: Grid Dependency */}
-        <Card glow="cyan" padding="sm" className="space-y-1">
+        <Card padding="sm" className="space-y-1">
           <span className="text-[11px] font-semibold text-slate-400">Grid Dependency</span>
           <div className="text-xl font-bold font-mono text-cyan-300">
             {gridPct.toFixed(1)}%

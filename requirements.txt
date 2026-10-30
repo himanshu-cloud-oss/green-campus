@@ -1,0 +1,10 @@
+# Python dependencies for the Vercel deployment (api/index.py).
+# The ML stack (numpy, pandas, scikit-learn) is left out to stay under Vercel's
+# function size limit; the forecast endpoints report 503 without it.
+# For local development use backend/requirements.txt, which includes everything.
+fastapi>=0.111.0
+sqlalchemy>=2.0.30
+pydantic>=2.7.1
+pydantic-settings>=2.2.1
+python-dotenv>=1.0.1
+tzdata>=2024.1

@@ -1,0 +1,416 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-30T00:50:38+00:00",
+  "title": "Design System: Green Campus AI",
+  "extensions": {
+    "colorMeta": {
+      "panel-ground": {
+        "role": "neutral",
+        "displayName": "Night Ground",
+        "tonalRamp": [
+          "#0E1116",
+          "#161A21",
+          "#222833",
+          "#2C333E",
+          "#4A525E",
+          "#7D8694",
+          "#B4BCC7",
+          "#E3E7EC"
+        ]
+      },
+      "panel-rail": {
+        "role": "neutral",
+        "displayName": "Rail Black",
+        "tonalRamp": [
+          "#0E1116",
+          "#161A21",
+          "#222833",
+          "#2C333E",
+          "#4A525E",
+          "#7D8694",
+          "#B4BCC7",
+          "#E3E7EC"
+        ]
+      },
+      "panel-raised": {
+        "role": "neutral",
+        "displayName": "Raised Graphite",
+        "tonalRamp": [
+          "#0E1116",
+          "#161A21",
+          "#222833",
+          "#2C333E",
+          "#4A525E",
+          "#7D8694",
+          "#B4BCC7",
+          "#E3E7EC"
+        ]
+      },
+      "panel-seam": {
+        "role": "neutral",
+        "displayName": "Seam",
+        "tonalRamp": [
+          "#0E1116",
+          "#161A21",
+          "#222833",
+          "#2C333E",
+          "#4A525E",
+          "#7D8694",
+          "#B4BCC7",
+          "#E3E7EC"
+        ]
+      },
+      "panel-wire": {
+        "role": "neutral",
+        "displayName": "Wire",
+        "tonalRamp": [
+          "#0E1116",
+          "#161A21",
+          "#222833",
+          "#2C333E",
+          "#4A525E",
+          "#7D8694",
+          "#B4BCC7",
+          "#E3E7EC"
+        ]
+      },
+      "panel-grid": {
+        "role": "neutral",
+        "displayName": "Grid",
+        "tonalRamp": [
+          "#0E1116",
+          "#161A21",
+          "#222833",
+          "#2C333E",
+          "#4A525E",
+          "#7D8694",
+          "#B4BCC7",
+          "#E3E7EC"
+        ]
+      },
+      "panel-ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "#0E1116",
+          "#161A21",
+          "#222833",
+          "#2C333E",
+          "#4A525E",
+          "#7D8694",
+          "#B4BCC7",
+          "#E3E7EC"
+        ]
+      },
+      "panel-muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "tonalRamp": [
+          "#0E1116",
+          "#161A21",
+          "#222833",
+          "#2C333E",
+          "#4A525E",
+          "#7D8694",
+          "#B4BCC7",
+          "#E3E7EC"
+        ]
+      },
+      "waste": {
+        "role": "primary",
+        "displayName": "Feeder Amber",
+        "tonalRamp": [
+          "#191307",
+          "#3A2709",
+          "#6B470E",
+          "#9A6411",
+          "#C27A12",
+          "#F5A524",
+          "#F8C46E",
+          "#FCE8C4"
+        ]
+      },
+      "waste-deep": {
+        "role": "primary",
+        "displayName": "Banked Amber",
+        "tonalRamp": [
+          "#191307",
+          "#3A2709",
+          "#6B470E",
+          "#9A6411",
+          "#C27A12",
+          "#F5A524",
+          "#F8C46E",
+          "#FCE8C4"
+        ]
+      },
+      "waste-field": {
+        "role": "primary",
+        "displayName": "Ember Field",
+        "tonalRamp": [
+          "#191307",
+          "#3A2709",
+          "#6B470E",
+          "#9A6411",
+          "#C27A12",
+          "#F5A524",
+          "#F8C46E",
+          "#FCE8C4"
+        ]
+      },
+      "lamp-on": {
+        "role": "secondary",
+        "displayName": "Lamp Red",
+        "tonalRamp": [
+          "#2A0F10",
+          "#4D1719",
+          "#7A2225",
+          "#AD3236",
+          "#E5484D",
+          "#EE7F82",
+          "#F5B3B5",
+          "#FBE3E4"
+        ]
+      },
+      "lamp-off": {
+        "role": "secondary",
+        "displayName": "Lamp Green",
+        "tonalRamp": [
+          "#0A2418",
+          "#103D29",
+          "#18603F",
+          "#228755",
+          "#3DD68C",
+          "#73E3AD",
+          "#A9EECD",
+          "#DDF8EB"
+        ]
+      },
+      "chart-base": {
+        "role": "tertiary",
+        "displayName": "Survey Blue",
+        "tonalRamp": [
+          "#141F31",
+          "#1E2D45",
+          "#2E4466",
+          "#3D5986",
+          "#5E86C2",
+          "#93B2DD",
+          "#BCD0EA",
+          "#EEF3FA"
+        ]
+      },
+      "chart-saved": {
+        "role": "primary",
+        "displayName": "Banked Amber (chart)",
+        "tonalRamp": [
+          "#191307",
+          "#3A2709",
+          "#6B470E",
+          "#9A6411",
+          "#C27A12",
+          "#F5A524",
+          "#F8C46E",
+          "#FCE8C4"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The single answer on a decision surface (picked room code)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "KPI strip figures and savings totals."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Selected-feeder and panel titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Rows, form text, explanatory lines."
+      },
+      "body-small": {
+        "displayName": "Body Small",
+        "purpose": "Secondary lines, buttons, legends."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "kW values and room codes in lists and tables."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase panel headings, KPI names, form labels, status tags."
+      }
+    },
+    "shadows": [
+      {
+        "name": "modal-drop",
+        "value": "0 24px 60px -12px rgba(0,0,0,0.7)",
+        "purpose": "Command palette only, over a 60% black backdrop."
+      }
+    ],
+    "motion": [
+      {
+        "name": "snap",
+        "value": "all 90ms steps(2, end)",
+        "purpose": "Every state change (hover, press, tooltip, selection). Nothing fades."
+      },
+      {
+        "name": "current-flow",
+        "value": "stroke-dasharray 7 5; dashoffset to -24; linear infinite; duration max(0.35s, 2.4s - 0.35s x kW)",
+        "purpose": "Live current along energised feeders; stilled under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ink slab for the one decision on a surface.",
+      "html": "<button class=\"ds-btn-primary\">Book this</button>",
+      "css": ".ds-btn-primary{background:#D9DEE5;color:#0E1116;font:600 12px/16px Archivo,system-ui,sans-serif;padding:6px 12px;border:0;border-radius:3px;cursor:pointer;transition:all 90ms steps(2,end)}.ds-btn-primary:hover{background:#fff}.ds-btn-primary:focus-visible{outline:1.5px solid #D9DEE5;outline-offset:2px}.ds-btn-primary:disabled{opacity:.5}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Hairline secondary action; border goes to ink on hover.",
+      "html": "<button class=\"ds-btn-outline\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/></svg>Back to live</button>",
+      "css": ".ds-btn-outline{display:inline-flex;align-items:center;gap:6px;background:transparent;color:#D9DEE5;font:400 12px/16px Archivo,system-ui,sans-serif;padding:4px 12px;border:1px solid #3A414D;border-radius:3px;cursor:pointer;transition:all 90ms steps(2,end)}.ds-btn-outline:hover{border-color:#D9DEE5}.ds-btn-outline:focus-visible{outline:1.5px solid #D9DEE5;outline-offset:2px}.ds-btn-outline:disabled{opacity:.4;cursor:not-allowed}"
+    },
+    {
+      "name": "Trip Button",
+      "kind": "button",
+      "refersTo": "button-trip",
+      "description": "Isolates a wasting feeder from the waste queue.",
+      "html": "<button class=\"ds-btn-trip\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 2v10\"/><path d=\"M18.4 6.6a9 9 0 1 1-12.77.04\"/></svg>TRIP</button>",
+      "css": ".ds-btn-trip{display:inline-flex;align-items:center;gap:6px;background:transparent;color:#D9DEE5;font:600 11px/14px Archivo,system-ui,sans-serif;letter-spacing:.1em;padding:4px 10px;border:1px solid #3A414D;border-radius:3px;cursor:pointer;transition:all 90ms steps(2,end)}.ds-btn-trip:hover{border-color:#D9DEE5}.ds-btn-trip:focus-visible{outline:1.5px solid #D9DEE5;outline-offset:2px}.ds-btn-trip:disabled{opacity:.4;cursor:not-allowed}"
+    },
+    {
+      "name": "Toggle Chip",
+      "kind": "chip",
+      "refersTo": "chip-toggle",
+      "description": "Pressed/unpressed choice for durations, room needs and spaces.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip\" aria-pressed=\"true\">Projector</button><button class=\"ds-chip\" aria-pressed=\"false\">AC</button></div>",
+      "css": ".ds-chips{display:flex;gap:6px}.ds-chip{background:transparent;color:#7D8694;font:400 12px/16px Archivo,system-ui,sans-serif;padding:4px 10px;border:1px solid #222833;border-radius:3px;cursor:pointer;transition:all 90ms steps(2,end)}.ds-chip:hover{border-color:#3A414D}.ds-chip[aria-pressed=true]{border-color:#D9DEE5;background:#222833;color:#D9DEE5}.ds-chip:focus-visible{outline:1.5px solid #D9DEE5;outline-offset:2px}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Text, number, time and select inputs with a label-type caption.",
+      "html": "<label class=\"ds-field-wrap\"><span class=\"ds-label\">Window end</span><input class=\"ds-field\" value=\"16:30\"></label>",
+      "css": ".ds-field-wrap{display:block;width:200px}.ds-label{display:block;font:600 10.5px/14px Archivo,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#7D8694;margin-bottom:4px}.ds-field{width:100%;background:#0E1116;color:#D9DEE5;caret-color:#D9DEE5;font:400 13px/18px 'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;padding:6px 10px;border:1px solid #222833;border-radius:3px;outline:none}.ds-field:hover{border-color:#3A414D}.ds-field:focus{border-color:#D9DEE5}.ds-field:disabled{opacity:.5}"
+    },
+    {
+      "name": "Icon Rail",
+      "kind": "nav",
+      "refersTo": "nav-rail-item",
+      "description": "56px rail of 40px icon items; the active item carries an ink edge tick.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-item is-active\" href=\"#\" aria-label=\"Floor panel (1)\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><path d=\"M22 12h-4l-3 9L9 3l-3 9H2\"/></svg></a><a class=\"ds-rail-item\" href=\"#\" aria-label=\"Book a class (3)\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\"/><path d=\"M16 2v4M8 2v4M3 10h18\"/></svg></a></nav>",
+      "css": ".ds-rail{width:56px;background:#0A0C10;border-right:1px solid #222833;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 0}.ds-rail-item{position:relative;width:40px;height:40px;display:grid;place-items:center;border-radius:3px;color:#7D8694;transition:all 90ms steps(2,end)}.ds-rail-item:hover{color:#D9DEE5;background:#141920}.ds-rail-item.is-active{background:#222833;color:#D9DEE5}.ds-rail-item.is-active::before{content:'';position:absolute;left:-8px;top:8px;bottom:8px;width:1px;background:#D9DEE5}.ds-rail-item:focus-visible{outline:1.5px solid #D9DEE5;outline-offset:2px}"
+    },
+    {
+      "name": "KPI Strip",
+      "kind": "custom",
+      "refersTo": "kpi-cell",
+      "description": "Seamed strip of tabular figures; amber only for waste.",
+      "html": "<div class=\"ds-kpis\"><div class=\"ds-kpi\"><div class=\"ds-kpi-l\">Incomer</div><div class=\"ds-kpi-v\">10.80<span>kW</span></div></div><div class=\"ds-kpi\"><div class=\"ds-kpi-l\">Into empty rooms</div><div class=\"ds-kpi-v is-waste\">7.46<span>kW</span></div></div></div>",
+      "css": ".ds-kpis{display:flex;background:#0E1116;border-bottom:1px solid #222833}.ds-kpi{padding:10px 20px;border-right:1px solid #222833;min-width:132px}.ds-kpi-l{font:600 10.5px/14px Archivo,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#7D8694}.ds-kpi-v{font:600 22px/28px 'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;color:#D9DEE5}.ds-kpi-v.is-waste{color:#F5A524}.ds-kpi-v span{font:500 12px Archivo,system-ui,sans-serif;color:#7D8694;margin-left:4px}"
+    },
+    {
+      "name": "Feeder",
+      "kind": "custom",
+      "refersTo": "single-line-diagram",
+      "description": "One single-line-diagram feeder: lamp, breaker, flowing line, room tag. Amber when wasting.",
+      "html": "<svg class=\"ds-feeder\" viewBox=\"0 0 120 220\" width=\"120\" height=\"220\"><rect x=\"0\" y=\"0\" width=\"120\" height=\"6\" fill=\"#D9DEE5\"/><line class=\"ds-flow\" x1=\"60\" y1=\"6\" x2=\"60\" y2=\"140\" stroke=\"#F5A524\" stroke-width=\"3\"/><circle cx=\"60\" cy=\"30\" r=\"4.5\" fill=\"#E5484D\"/><rect x=\"48\" y=\"44\" width=\"24\" height=\"32\" fill=\"#0E1116\"/><path d=\"M52 58 L60 58 L69 46 M60 72 L60 80\" stroke=\"#F5A524\" stroke-width=\"2\" fill=\"none\"/><rect x=\"12\" y=\"140\" width=\"96\" height=\"70\" fill=\"#191307\" stroke=\"#F5A524\"/><text x=\"20\" y=\"161\" fill=\"#D9DEE5\" font-size=\"14\" font-weight=\"600\" font-family=\"JetBrains Mono\">LS-09</text><text x=\"20\" y=\"178\" fill=\"#7D8694\" font-size=\"11.5\" font-family=\"Archivo\">Lunch break</text><text x=\"20\" y=\"197\" fill=\"#F5A524\" font-size=\"13\" font-weight=\"600\" font-family=\"JetBrains Mono\">0.30 kW</text></svg>",
+      "css": ".ds-feeder{background:#0E1116}.ds-flow{stroke-dasharray:7 5;animation:ds-current 1.2s linear infinite}@keyframes ds-current{to{stroke-dashoffset:-24}}@media (prefers-reduced-motion:reduce){.ds-flow{animation:none}}"
+    },
+    {
+      "name": "Status Tag",
+      "kind": "chip",
+      "refersTo": "tag-status",
+      "description": "Provenance tags: VERIFIED solid, ESTIMATED dashed, SIMULATED in the top bar.",
+      "html": "<span class=\"ds-tag\">VERIFIED</span> <span class=\"ds-tag is-est\">ESTIMATED</span>",
+      "css": ".ds-tag{display:inline-block;font:600 11px/14px Archivo,system-ui,sans-serif;letter-spacing:.08em;padding:2px 6px;border:1px solid #3A414D;border-radius:2px;color:#D9DEE5}.ds-tag.is-est{border-style:dashed;color:#7D8694}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Panel",
+    "overview": "The console is a switchboard seen at night by the electrician who wired it. The floor is drawn as a single-line diagram (transformer, meter, main breaker, 415 V bus, one feeder per room), and every other surface borrows the same vocabulary: seams instead of cards, lamps instead of badges, line weight instead of decoration. Graphite ground, neutral ink, and exactly one warm signal, amber, which means one thing only: power flowing into a room the timetable says is empty.\n\nDensity is high and calm. Panels are split by 1px seams and sit flush against each other; nothing floats, glows, or fades. Words are set in Archivo, every figure in tabular JetBrains Mono, so columns of kW line up under a glance. State changes snap in two frames, the way a breaker throws, and the only continuous motion in the product is current flowing along energised feeders.\n\nThe world rejects the category default for energy dashboards: tiled KPI cards, donut charts, gradient fills and neon glow. Those devices were explicitly refused in the direction contract and the shipped surfaces carry none of them.",
+    "keyCharacteristics": [
+      "Graphite ground, 1px seams, flush panels; no cards.",
+      "Amber is reserved for waste; red/green follow the Indian panel-lamp code.",
+      "Archivo for words, JetBrains Mono tabular for every figure.",
+      "Switchgear drawn in SVG; line weight encodes kW.",
+      "Two-step snaps for state; dash-flow for live current; nothing fades."
+    ],
+    "rules": [
+      {
+        "name": "The One Signal Rule",
+        "body": "Amber means power into an empty room and nothing else. It never marks a brand moment, a hover, a primary action or a \"warning\" of another kind.",
+        "section": "colors"
+      },
+      {
+        "name": "The Panel-Lamp Rule",
+        "body": "Red is energised and green is tripped (Indian switchgear convention). Never use green as \"good\" or red as \"bad\" outside that meaning, except error text and destructive hover where red already reads as live danger.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink-Not-Accent Rule",
+        "body": "Interactive emphasis is carried by ink (#D9DEE5) on graphite, not by a brand hue. The primary button is an ink slab; selection is an ink outline.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every figure (kW, kWh, °C, times, counts, room codes) is JetBrains Mono with tabular numerals. Words never are.",
+        "section": "typography"
+      },
+      {
+        "name": "The Label-Is-The-Heading Rule",
+        "body": "The uppercase label is the panel's actual heading and carries its live count or value. It is never stacked as an ornamental line above another heading.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flush Panel Rule",
+        "body": "Panels meet at 1px seams. If a block needs separation, add a seam, not a shadow, a gap or a card.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** separate every panel, row and region with a 1px Seam (#222833) and let panels sit flush.",
+      "**Do** set every figure in JetBrains Mono with tabular numerals, and put its unit in muted Archivo beside it.",
+      "**Do** reserve Feeder Amber (#F5A524) for power into an empty room, everywhere it appears.",
+      "**Do** use the panel-lamp code: Lamp Red for energised, Lamp Green for tripped.",
+      "**Do** snap state changes in two steps (90ms, steps(2, end)) and keep current flow as the only continuous motion, stilled under reduced motion.",
+      "**Do** label simulated and estimated values in place (SIMULATED, ESTIMATED tags; \"· simulated\" beside timestamps).",
+      "**Do** draw domain objects as SVG switchgear and use line weight, dash and lamp state to carry meaning."
+    ],
+    "donts": [
+      "**Don't** use cards, glows, gradient fills or decorative shadows; the command palette's modal drop is the only shadow. Drawn patterns (the 20px drafting grid, the lunch hatch) are linework, not gradients, and stay allowed.",
+      "**Don't** tile KPIs as cards or show proportions as donut charts; KPIs live in a seamed strip.",
+      "**Don't** use amber, red or green as general-purpose accent, success or warning colours.",
+      "**Don't** fade or ease state changes; nothing fades in this world.",
+      "**Don't** round controls beyond 3px; only lamps and status dots are circles.",
+      "**Don't** stack an uppercase label above a heading as an eyebrow; the label is the heading."
+    ]
+  }
+}

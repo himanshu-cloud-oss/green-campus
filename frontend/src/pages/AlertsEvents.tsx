@@ -1,232 +1,193 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Power } from 'lucide-react';
 import { useAlerts } from '../hooks/useAlerts';
 import { useSimulations } from '../hooks/useSimulations';
-import { AlertPanel } from '../components/alerts/AlertPanel';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { formatDateTime } from '../utils/formatters';
-import { Sparkles, RefreshCw, Radio, Terminal, Filter } from 'lucide-react';
+import { AlertCard, ALERT_GRID } from '../components/alerts/AlertCard';
+import { CountdownTimer } from '../components/alerts/CountdownTimer';
+import { api } from '../services/api';
+import { Alert, Classroom, PeriodDefinition } from '../types';
+import { STANDARD_PERIODS } from '../utils/timeUtils';
+
+const FILTERS: { id: Alert['severity'] | 'ALL' | 'OPEN'; label: string }[] = [
+  { id: 'OPEN', label: 'Open' },
+  { id: 'ALL', label: 'All' },
+  { id: 'CRITICAL', label: 'Critical' },
+  { id: 'WARNING', label: 'Warning' },
+  { id: 'INFO', label: 'Info' },
+  { id: 'RESOLVED', label: 'Resolved' },
+];
+
+const chip = (on: boolean) =>
+  `text-xs px-2.5 py-1 rounded-[3px] border snap ${on ? 'border-panel-ink bg-panel-seam text-panel-ink' : 'border-panel-seam text-panel-muted hover:border-panel-wire'}`;
 
 export const AlertsEvents: React.FC = () => {
-  const {
-    alerts,
-    activeAlertsCount,
-    unreadCount,
-    isLoading,
-    acknowledgeAlert,
-    resolveAlert,
-    deleteAlert,
-    clearResolved,
-    refetch,
-  } = useAlerts();
+  const { alerts, openCount, unreadCount, isLoading, error, acknowledgeAlert, resolveAlert, deleteAlert, refetch } = useAlerts();
+  const { pendingSimulations, triggerNoShow, cancelSimulation, executeSimulation } = useSimulations();
+  const [periods, setPeriods] = useState<PeriodDefinition[]>(STANDARD_PERIODS);
+  const [rooms, setRooms] = useState<Classroom[]>([]);
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]['id']>('OPEN');
+  const [query, setQuery] = useState('');
+  const [testRoom, setTestRoom] = useState<number | null>(null);
+  const [testPeriod, setTestPeriod] = useState<string>('');
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const { simulations, cancelSimulation, triggerNoShow } = useSimulations();
+  useEffect(() => {
+    api.listClassrooms().then(r => { setRooms(r); setTestRoom(t => t ?? r[0]?.id ?? null); }).catch(() => undefined);
+    api.getPeriods().then(setPeriods).catch(() => undefined);
+  }, []);
+  const teaching = periods.filter(p => !p.is_break);
+  const period = teaching.find(p => p.period_number === testPeriod) ?? teaching[0];
 
-  const [activeTab, setActiveTab] = useState<'console' | 'history'>('console');
-  const [testClassroomId, setTestClassroomId] = useState<number>(4);
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return alerts.filter(a => {
+      if (filter === 'OPEN' && a.severity === 'RESOLVED') return false;
+      if (filter !== 'OPEN' && filter !== 'ALL' && a.severity !== filter) return false;
+      if (!q) return true;
+      return [a.title, a.message, a.classroom_name ?? ''].some(t => t.toLowerCase().includes(q));
+    });
+  }, [alerts, filter, query]);
 
-  const handleSimulateTestAlert = async () => {
-    await triggerNoShow(testClassroomId, 'Console Manual Trigger', 180);
-    refetch();
+  const run = async (fn: () => Promise<unknown>) => {
+    setBusy(true);
+    setActionError(null);
+    try {
+      await fn();
+      await refetch();
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="p-4 space-y-4">
+      <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <Radio className="w-6 h-6 text-rose-500 animate-pulse" />
-            <span>Server Room Console & Event Monitor</span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Real-time incident response, automated HVAC cutoffs, and smart sensor telemetry monitoring.
+          <h1 className="text-[17px] font-semibold">Alerts</h1>
+          <p className="text-xs text-panel-muted max-w-xl">
+            What the backend has logged: no-show tests, the cut-offs they lead to, and system notices.
+            No occupancy sensors are installed, so a no-show is only ever started by hand, below.
           </p>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSimulateTestAlert}
-            icon={<Sparkles className="w-3.5 h-3.5 text-amber-400" />}
-          >
-            Trigger Test No-Show
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={refetch}
-            isLoading={isLoading}
-            icon={<RefreshCw className="w-3.5 h-3.5" />}
-          >
-            Sync Feeds
-          </Button>
-        </div>
+        <dl className="flex gap-6 text-xs">
+          <div><dt className="section-title">Open</dt><dd className="num text-[15px] font-semibold">{openCount}</dd></div>
+          <div><dt className="section-title">Not acknowledged</dt><dd className="num text-[15px] font-semibold">{unreadCount}</dd></div>
+          <div><dt className="section-title">Cut-offs pending</dt><dd className="num text-[15px] font-semibold">{pendingSimulations.length}</dd></div>
+        </dl>
       </div>
 
-      {/* Status Counters Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3.5">
-        <Card glow="amber" padding="sm" className="space-y-1">
-          <span className="text-[11px] font-semibold text-slate-400">Active Incidents</span>
-          <div className="text-2xl font-bold font-mono text-white">{activeAlertsCount}</div>
-          <div className="text-[10px] text-amber-400 font-mono">Requires attention or monitoring</div>
-        </Card>
-
-        <Card glow="cyan" padding="sm" className="space-y-1">
-          <span className="text-[11px] font-semibold text-slate-400">Unread / Unacknowledged</span>
-          <div className="text-2xl font-bold font-mono text-cyan-300">{unreadCount}</div>
-          <div className="text-[10px] text-slate-400 font-mono">TopNav badge counter</div>
-        </Card>
-
-        <Card glow="violet" padding="sm" className="space-y-1">
-          <span className="text-[11px] font-semibold text-slate-400">Active Simulation Timers</span>
-          <div className="text-2xl font-bold font-mono text-purple-300">
-            {simulations.filter(s => s.status === 'PENDING').length}
-          </div>
-          <div className="text-[10px] text-purple-400 font-mono">1-second interval execution</div>
-        </Card>
-
-        <Card glow="green" padding="sm" className="space-y-1">
-          <span className="text-[11px] font-semibold text-slate-400">Resolved Today</span>
-          <div className="text-2xl font-bold font-mono text-emerald-400">
-            {alerts.filter(a => a.severity === 'RESOLVED').length}
-          </div>
-          <div className="text-[10px] text-emerald-400 font-mono">Energy cutoffs confirmed</div>
-        </Card>
-      </div>
-
-      {/* View Switcher: Live Console vs Event History */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
-        <button
-          onClick={() => setActiveTab('console')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            activeTab === 'console'
-              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <Terminal className="w-4 h-4" />
-          <span>Live Alert Console & Countdown Timers</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('history')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            activeTab === 'history'
-              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <Filter className="w-4 h-4" />
-          <span>Full Event History Table ({alerts.length})</span>
-        </button>
-      </div>
-
-      {/* Main Tab Content */}
-      {activeTab === 'console' ? (
-        <AlertPanel
-          alerts={alerts}
-          simulations={simulations}
-          onAcknowledgeAlert={acknowledgeAlert}
-          onResolveAlert={resolveAlert}
-          onDeleteAlert={deleteAlert}
-          onClearResolved={clearResolved}
-          onCancelSimulation={cancelSimulation}
-        />
-      ) : (
-        /* Event History Table View */
-        <Card padding="none" className="overflow-hidden">
-          <div className="p-4 border-b border-slate-800 bg-slate-900/90 flex justify-between items-center">
-            <div>
-              <h3 className="text-sm font-bold text-white">Historical Telemetry Log</h3>
-              <p className="text-xs text-slate-400">Complete record of all detected conditions and operator actions</p>
-            </div>
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={clearResolved}
-            >
-              Purge Resolved
-            </Button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Severity</th>
-                  <th className="py-3 px-4">Event Title</th>
-                  <th className="py-3 px-4">Location</th>
-                  <th className="py-3 px-4">Event Type</th>
-                  <th className="py-3 px-4">Logged At</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono">
-                {alerts.map(a => {
-                  const isResolved = a.severity === 'RESOLVED';
-                  return (
-                    <tr key={a.id} className="hover:bg-slate-800/40">
-                      <td className="py-3 px-4">
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            a.severity === 'CRITICAL'
-                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                              : a.severity === 'WARNING'
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                              : a.severity === 'INFO'
-                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                              : 'bg-slate-800 text-slate-400'
-                          }`}
-                        >
-                          {a.severity}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 font-sans font-medium text-slate-200">{a.title}</td>
-                      <td className="py-3 px-4 text-cyan-300">{a.classroom_name || 'Campus Wide'}</td>
-                      <td className="py-3 px-4 text-slate-400 font-sans text-[11px]">{a.alert_type}</td>
-                      <td className="py-3 px-4 text-slate-400 font-sans text-[11px]">
-                        {formatDateTime(a.created_at)}
-                      </td>
-                      <td className="py-3 px-4 font-sans">
-                        {isResolved ? (
-                          <span className="text-emerald-400 font-semibold text-[11px]">Resolved</span>
-                        ) : a.acknowledged_at ? (
-                          <span className="text-cyan-400 font-semibold text-[11px]">Acknowledged</span>
-                        ) : (
-                          <span className="text-amber-400 font-semibold text-[11px]">Pending</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {!isResolved && (
-                            <button
-                              onClick={() => resolveAlert(a.id)}
-                              className="px-2 py-0.5 text-[10px] font-sans font-semibold rounded bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
-                            >
-                              Resolve
-                            </button>
-                          )}
-                          <button
-                            onClick={() => deleteAlert(a.id)}
-                            className="p-1 rounded text-slate-500 hover:text-rose-400"
-                            title="Delete"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+      {pendingSimulations.length > 0 && (
+        <section className="border border-panel-seam" aria-label="Cut-offs counting down">
+          <h2 className="section-title px-4 pt-2.5 pb-2">Cut-offs counting down · {pendingSimulations.length}</h2>
+          <ul>
+            {pendingSimulations.map(sim => (
+              <li key={sim.id} className="grid grid-cols-[10px_64px_minmax(0,1fr)_auto] sm:grid-cols-[10px_64px_minmax(0,1fr)_88px_auto] items-center gap-x-3 gap-y-1 px-4 py-2 border-t border-panel-seam">
+                <span className="w-2 h-2 rounded-full bg-lamp-on" title="Energised until the cut-off runs" aria-hidden />
+                <span className="num text-[13px] font-semibold">{sim.classroom_name}</span>
+                <span className="text-xs min-w-0">
+                  <span className="block truncate">No-show test · {sim.period_label}</span>
+                  <span className="sm:hidden text-[11px] text-panel-muted">cuts off in <CountdownTimer scheduledActionAt={sim.scheduled_action_at} /></span>
+                </span>
+                <span className="hidden sm:block text-right text-[13px]"><CountdownTimer scheduledActionAt={sim.scheduled_action_at} /></span>
+                <span className="flex items-center gap-3 justify-end">
+                  <button
+                    disabled={busy}
+                    onClick={() => run(() => executeSimulation(sim.id))}
+                    className="flex items-center gap-1.5 border border-panel-wire hover:border-panel-ink text-[11px] font-semibold tracking-[0.1em] px-2.5 py-1 rounded-[3px] snap disabled:opacity-40"
+                  >
+                    <Power className="w-3 h-3" strokeWidth={1.6} /> CUT NOW
+                  </button>
+                  <button disabled={busy} onClick={() => run(() => cancelSimulation(sim.id))} className="text-xs text-panel-muted hover:text-panel-ink snap">
+                    Cancel
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
+
+      <section className="border border-panel-seam px-4 py-3" aria-label="Test a no-show">
+        <h2 className="section-title mb-2">Test a no-show</h2>
+        <div className="flex flex-wrap items-end gap-3">
+          <label>
+            <span className="label">Room</span>
+            <select className="field num !w-auto" value={testRoom ?? ''} onChange={e => setTestRoom(Number(e.target.value))}>
+              {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+            </select>
+          </label>
+          <label>
+            <span className="label">Period</span>
+            <select className="field num !w-auto" value={period?.period_number ?? ''} onChange={e => setTestPeriod(e.target.value)}>
+              {teaching.map(p => <option key={p.period_number} value={p.period_number}>P{p.period_number} · {p.start_time}–{p.end_time}</option>)}
+            </select>
+          </label>
+          <button
+            disabled={busy || testRoom === null || !period}
+            onClick={() =>
+              period && testRoom !== null &&
+              run(() => triggerNoShow(testRoom, `Period ${period.period_number}`, period.start_time, period.end_time))
+            }
+            className="text-xs border border-panel-wire hover:border-panel-ink px-3 py-1.5 rounded-[3px] snap disabled:opacity-40"
+          >
+            Start test
+          </button>
+          <p className="text-xs text-panel-muted max-w-md basis-full sm:basis-auto">
+            Logs a warning and starts the cut-off countdown set in Settings, the way a detected no-show would be handled.
+          </p>
+        </div>
+        {actionError && <p className="text-xs text-lamp-on mt-2">{actionError}</p>}
+      </section>
+
+      <section className="border border-panel-seam" aria-label="Alert log">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5">
+          <h2 className="section-title mr-1">Log · {shown.length}</h2>
+          <div className="flex flex-wrap gap-1" role="group" aria-label="Filter by state">
+            {FILTERS.map(f => (
+              <button key={f.id} aria-pressed={filter === f.id} onClick={() => setFilter(f.id)} className={chip(filter === f.id)}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <label className="sm:ml-auto w-full sm:w-56">
+            <span className="sr-only">Search alerts</span>
+            <input type="search" className="field !py-1" placeholder="Search title, message or room" value={query} onChange={e => setQuery(e.target.value)} />
+          </label>
+          {error && <span className="text-xs text-lamp-on basis-full">{error}</span>}
+        </div>
+
+        <div className={`hidden lg:grid ${ALERT_GRID} gap-x-3 px-4 py-1.5 border-t border-panel-seam text-[11px] text-panel-muted`}>
+          <span>Severity</span>
+          <span>Event</span>
+          <span>Room</span>
+          <span>Logged</span>
+          <span>State</span>
+          <span />
+        </div>
+
+        {isLoading && alerts.length === 0 ? (
+          <div className="border-t border-panel-seam bg-panel-raised/40 h-40" aria-busy="true" aria-label="Loading alerts" />
+        ) : shown.length === 0 ? (
+          <p className="border-t border-panel-seam px-4 py-6 text-[13px] text-panel-muted">
+            {error
+              ? 'The backend is not reachable, so no alerts can be shown.'
+              : alerts.length === 0
+              ? 'Nothing has been logged yet.'
+              : filter === 'OPEN' && !query
+              ? 'No open alerts. Everything logged has been resolved.'
+              : 'No alerts match this filter.'}
+          </p>
+        ) : (
+          <ul>
+            {shown.map(a => (
+              <AlertCard key={a.id} alert={a} onAcknowledge={acknowledgeAlert} onResolve={resolveAlert} onDelete={deleteAlert} />
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 };

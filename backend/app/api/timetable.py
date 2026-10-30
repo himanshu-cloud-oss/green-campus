@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import TimetableEntry, Classroom
 from app.schemas.schemas import TimetableEntryOut, PeriodDefinition, ClassroomStatusOut
+from app.clock import now_local
 from app.services.timetable_service import (
     get_all_periods,
     get_current_period,
@@ -52,7 +53,7 @@ def get_current_timetable_status(
     If classroom_id is provided, returns single classroom status.
     If omitted, returns current status across all active campus classrooms.
     """
-    now = datetime.now()
+    now = now_local()
     target_date = date or now.date()
 
     if time:

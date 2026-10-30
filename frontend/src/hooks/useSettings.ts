@@ -1,23 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Setting } from '../types';
 import { api } from '../services/api';
+import { errorMessage } from '../services/pilot';
 
+/** Settings with local edits; save() writes only the keys that changed. */
 export function useSettings() {
-  const [settings, setSettings] = useState<Setting[]>([]);
+  const [saved, setSaved] = useState<Setting[]>([]);
+  const [draft, setDraft] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
 
   const fetchSettings = useCallback(async () => {
-    setIsLoading(true);
     try {
-      const data = await api.getSettings();
-      setSettings(data);
+      setSaved(await api.getSettings());
       setError(null);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to load settings';
-      setError(msg);
+    } catch (err) {
+      setError(errorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -27,54 +27,36 @@ export function useSettings() {
     fetchSettings();
   }, [fetchSettings]);
 
-  const updateSettingValue = (key: string, value: string) => {
-    setSettings(prev =>
-      prev.map(s => (s.key === key ? { ...s, value } : s))
-    );
-  };
+  const changed = useMemo(
+    () => saved.filter(s => draft[s.key] !== undefined && draft[s.key] !== s.value),
+    [saved, draft]
+  );
 
-  const saveSettings = async (customSettings?: Setting[]) => {
+  const save = async () => {
     setIsSaving(true);
+    setError(null);
     try {
-      const toSave = customSettings || settings;
-      const updated = await api.updateSettings(toSave);
-      setSettings(updated);
-      setSuccessMessage('Settings updated successfully');
-      setTimeout(() => setSuccessMessage(null), 3500);
-      return updated;
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to save settings';
-      setError(msg);
-      throw err;
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const resetToDefaults = async () => {
-    setIsSaving(true);
-    try {
-      const reset = await api.resetSettings();
-      setSettings(reset);
-      setSuccessMessage('Settings reset to system defaults');
-      setTimeout(() => setSuccessMessage(null), 3500);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to reset settings';
-      setError(msg);
+      const updated = await Promise.all(changed.map(s => api.updateSetting(s.key, draft[s.key].trim())));
+      setSaved(prev => prev.map(s => updated.find(u => u.key === s.key) ?? s));
+      setDraft({});
+      setSavedAt(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false }));
+    } catch (err) {
+      setError(errorMessage(err));
     } finally {
       setIsSaving(false);
     }
   };
 
   return {
-    settings,
+    settings: saved,
+    valueOf: (key: string) => draft[key] ?? saved.find(s => s.key === key)?.value ?? '',
+    edit: (key: string, value: string) => setDraft(d => ({ ...d, [key]: value })),
+    discard: () => setDraft({}),
+    changed,
     isLoading,
     isSaving,
     error,
-    successMessage,
-    updateSettingValue,
-    saveSettings,
-    resetToDefaults,
-    refetch: fetchSettings,
+    savedAt,
+    save,
   };
 }

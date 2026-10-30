@@ -1,0 +1,95 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1440px;height:900px;overflow:hidden;background:#0E1116;color:#D9DEE5;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;display:grid;grid-template-columns:56px 1fr 340px;grid-template-rows:60px 1fr 190px}
+.rail{grid-row:1/4;background:#0A0C10;border-right:1px solid #222833;display:flex;flex-direction:column;align-items:center;gap:14px;padding:14px 0}
+.rail i{width:24px;height:24px;border:1.5px solid #3A414D;border-radius:5px}.rail i.on{border-color:#D9DEE5;background:#222833}
+.top{grid-column:2/4;display:flex;border-bottom:1px solid #222833}
+.k{padding:10px 22px;border-right:1px solid #222833}.k small{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#7D8694}.k b{display:block;font:600 22px 'JetBrains Mono';margin-top:2px}.k b u{text-decoration:none;font:500 12px Archivo;color:#7D8694;margin-left:4px}
+.k.w b{color:#F5A524}
+.id{margin-left:auto;padding:12px 22px;text-align:right;font-size:12px;color:#7D8694}.id b{color:#D9DEE5;font-size:14px;display:block}
+.dia{position:relative;padding:14px 18px}
+.dia h2,.q h2,.rib h2{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#7D8694;font-weight:600}
+.q{grid-row:2/4;border-left:1px solid #222833;padding:16px 18px}
+.row{display:grid;grid-template-columns:10px 54px 1fr 52px;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #1A1F27;font-size:13px}
+.row .lamp{width:8px;height:8px;border-radius:50%;background:#E5484D;box-shadow:0 0 6px #E5484D}
+.row b{font:600 13px 'JetBrains Mono'}.row small{display:block;color:#7D8694;font-size:11.5px;margin-top:2px}.row .kw{text-align:right;font:600 13px 'JetBrains Mono';color:#F5A524}
+.trip{grid-column:2/5;justify-self:end;margin-top:2px;border:1px solid #3A414D;background:transparent;color:#D9DEE5;font:600 11px Archivo;letter-spacing:.1em;padding:5px 14px;border-radius:3px}
+.rib{grid-column:2/3;border-top:1px solid #222833;padding:12px 18px}
+.ax{display:flex;justify-content:space-between;font:400 10.5px 'JetBrains Mono';color:#5B6371;margin-top:4px}
+</style></head><body>
+<nav class="rail"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></nav>
+<div class="top">
+<div class="k"><small>Incomer</small><b>13.10<u>kW</u></b></div>
+<div class="k w"><small>Waste</small><b>8.70<u>kW</u></b></div>
+<div class="k"><small>Today</small><b>96.4<u>kWh</u></b></div>
+<div class="k"><small>Ambient</small><b>30.2<u>°C</u></b></div>
+<div class="k"><small>Devices on</small><b>97<u>/163</u></b></div>
+<div class="id"><b>L Block · 2nd floor · LT-DB-2</b>Thu 29 Oct 11:45 · lunch · simulated</div>
+</div>
+<section class="dia"><h2>Single-line · live</h2>
+<svg width="1010" height="570" viewBox="0 0 1010 570" font-family="Archivo" font-size="11">
+<defs><pattern id="g" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#151A21" stroke-width="1"/></pattern></defs>
+<rect width="1010" height="570" fill="url(#g)"/>
+<!-- incomer: transformer, meter, main breaker -->
+<g stroke="#D9DEE5" fill="none" stroke-width="1.5">
+<circle cx="40" cy="40" r="13"/><circle cx="40" cy="58" r="13"/>
+<line x1="40" y1="71" x2="40" y2="98"/><circle cx="40" cy="112" r="14"/><line x1="40" y1="126" x2="40" y2="140"/>
+<rect x="31" y="140" width="18" height="18"/><line x1="31" y1="140" x2="49" y2="158"/><line x1="49" y1="140" x2="31" y2="158"/>
+<line x1="40" y1="158" x2="40" y2="176"/></g>
+<text x="62" y="54" fill="#7D8694">11kV/415V</text><text x="33" y="116" font-size="9" fill="#D9DEE5">kWh</text><text x="62" y="152" fill="#7D8694">MCCB 125A</text>
+<!-- busbar -->
+<rect x="20" y="174" width="975" height="6" fill="#D9DEE5"/><text x="840" y="168" fill="#7D8694">415V BUS · 13.1 kW</text>
+<!-- feeder template: x, thickness by kW; amber = waste -->
+<g font-family="JetBrains Mono">
+<!-- LS-03 waste -->
+<g transform="translate(110,0)"><line x1="0" y1="180" x2="0" y2="292" stroke="#F5A524" stroke-width="4.2" stroke-dasharray="7 5"/><circle cx="0" cy="210" r="4" fill="#E5484D"/><path d="M-8 232 L0 232 L9 220 M0 246 L0 254" stroke="#F5A524" stroke-width="2" fill="none"/><line x1="-30" y1="292" x2="30" y2="292" stroke="#F5A524" stroke-width="2"/>
+<g stroke-width="2"><line x1="-30" y1="292" x2="-30" y2="318" stroke="#3A414D"/><line x1="-10" y1="292" x2="-10" y2="318" stroke="#3A414D"/><line x1="10" y1="292" x2="10" y2="318" stroke="#F5A524"/><line x1="30" y1="292" x2="30" y2="318" stroke="#F5A524"/></g>
+<text x="-36" y="332" fill="#5B6371" font-size="9">AC FN LT AV</text><text x="-36" y="345" fill="#7D8694" font-size="9">0/2 0/6 6/12 1/1</text>
+<rect x="-42" y="360" width="84" height="64" fill="#191307" stroke="#F5A524"/><text x="-34" y="380" fill="#D9DEE5" font-size="13" font-weight="600">LS-03</text><text x="-34" y="396" fill="#7D8694" font-family="Archivo">Lunch · empty</text><text x="-34" y="413" fill="#F5A524" font-weight="600">1.60 kW</text></g>
+<!-- LS-04 waste -->
+<g transform="translate(220,0)"><line x1="0" y1="180" x2="0" y2="292" stroke="#F5A524" stroke-width="3.6" stroke-dasharray="7 5"/><circle cx="0" cy="210" r="4" fill="#E5484D"/><path d="M-8 232 L0 232 L9 220 M0 246 L0 254" stroke="#F5A524" stroke-width="2" fill="none"/><line x1="-30" y1="292" x2="30" y2="292" stroke="#F5A524" stroke-width="2"/>
+<g stroke-width="2"><line x1="-30" y1="292" x2="-30" y2="318" stroke="#3A414D"/><line x1="-10" y1="292" x2="-10" y2="318" stroke="#F5A524"/><line x1="10" y1="292" x2="10" y2="318" stroke="#F5A524"/><line x1="30" y1="292" x2="30" y2="318" stroke="#3A414D"/></g>
+<text x="-36" y="332" fill="#5B6371" font-size="9">AC FN LT AV</text><text x="-36" y="345" fill="#7D8694" font-size="9">0/2 4/4 5/8 0/1</text>
+<rect x="-42" y="360" width="84" height="64" fill="#191307" stroke="#F5A524"/><text x="-34" y="380" fill="#D9DEE5" font-size="13" font-weight="600">LS-04</text><text x="-34" y="396" fill="#7D8694" font-family="Archivo">Lunch · empty</text><text x="-34" y="413" fill="#F5A524" font-weight="600">1.30 kW</text></g>
+<!-- LS-05 occupied -->
+<g transform="translate(330,0)"><line x1="0" y1="180" x2="0" y2="292" stroke="#D9DEE5" stroke-width="5"/><circle cx="0" cy="210" r="4" fill="#E5484D"/><path d="M-8 232 L0 232 L9 220 M0 246 L0 254" stroke="#D9DEE5" stroke-width="2" fill="none"/><line x1="-30" y1="292" x2="30" y2="292" stroke="#D9DEE5" stroke-width="2"/>
+<g stroke-width="2" stroke="#D9DEE5"><line x1="-30" y1="292" x2="-30" y2="318"/><line x1="-10" y1="292" x2="-10" y2="318"/><line x1="10" y1="292" x2="10" y2="318"/><line x1="30" y1="292" x2="30" y2="318"/></g>
+<text x="-36" y="332" fill="#5B6371" font-size="9">AC FN LT IT</text><text x="-36" y="345" fill="#7D8694" font-size="9">2/2 3/4 9/10 6/6</text>
+<rect x="-42" y="360" width="84" height="64" fill="#141920" stroke="#3A414D"/><text x="-34" y="380" fill="#D9DEE5" font-size="13" font-weight="600">LS-05</text><text x="-34" y="396" fill="#7D8694" font-family="Archivo">Staff · 7</text><text x="-34" y="413" fill="#D9DEE5" font-weight="600">2.40 kW</text></g>
+<!-- LS-08 waste biggest -->
+<g transform="translate(440,0)"><line x1="0" y1="180" x2="0" y2="292" stroke="#F5A524" stroke-width="5" stroke-dasharray="7 5"/><circle cx="0" cy="210" r="4" fill="#E5484D"/><path d="M-8 232 L0 232 L9 220 M0 246 L0 254" stroke="#F5A524" stroke-width="2" fill="none"/><line x1="-30" y1="292" x2="30" y2="292" stroke="#F5A524" stroke-width="2"/>
+<g stroke-width="2"><line x1="-30" y1="292" x2="-30" y2="318" stroke="#F5A524"/><line x1="-10" y1="292" x2="-10" y2="318" stroke="#3A414D"/><line x1="10" y1="292" x2="10" y2="318" stroke="#F5A524"/><line x1="30" y1="292" x2="30" y2="318" stroke="#3A414D"/></g>
+<text x="-36" y="332" fill="#5B6371" font-size="9">AC FN LT AV</text><text x="-36" y="345" fill="#7D8694" font-size="9">1/2 0/4 8/8 0/1</text>
+<rect x="-42" y="360" width="84" height="64" fill="#191307" stroke="#F5A524"/><text x="-34" y="380" fill="#D9DEE5" font-size="13" font-weight="600">LS-08</text><text x="-34" y="396" fill="#7D8694" font-family="Archivo">Lunch · empty</text><text x="-34" y="413" fill="#F5A524" font-weight="600">2.10 kW</text></g>
+<!-- LS-09 -->
+<g transform="translate(550,0)"><line x1="0" y1="180" x2="0" y2="292" stroke="#F5A524" stroke-width="4.6" stroke-dasharray="7 5"/><circle cx="0" cy="210" r="4" fill="#E5484D"/><path d="M-8 232 L0 232 L9 220 M0 246 L0 254" stroke="#F5A524" stroke-width="2" fill="none"/><line x1="-30" y1="292" x2="30" y2="292" stroke="#F5A524" stroke-width="2"/>
+<g stroke-width="2"><line x1="-30" y1="292" x2="-30" y2="318" stroke="#3A414D"/><line x1="-10" y1="292" x2="-10" y2="318" stroke="#F5A524"/><line x1="10" y1="292" x2="10" y2="318" stroke="#F5A524"/><line x1="30" y1="292" x2="30" y2="318" stroke="#3A414D"/></g>
+<text x="-36" y="332" fill="#5B6371" font-size="9">AC FN LT AV</text><text x="-36" y="345" fill="#7D8694" font-size="9">0/2 4/6 12/12 0/1</text>
+<rect x="-42" y="360" width="84" height="64" fill="#191307" stroke="#F5A524"/><text x="-34" y="380" fill="#D9DEE5" font-size="13" font-weight="600">LS-09</text><text x="-34" y="396" fill="#7D8694" font-family="Archivo">Lunch · empty</text><text x="-34" y="413" fill="#F5A524" font-weight="600">1.88 kW</text></g>
+<!-- LS-10 tripped (green lamp) -->
+<g transform="translate(660,0)"><line x1="0" y1="180" x2="0" y2="292" stroke="#3A414D" stroke-width="1.5"/><circle cx="0" cy="210" r="4" fill="#3DD68C"/><path d="M-8 232 L0 232 L-6 216 M0 246 L0 254" stroke="#7D8694" stroke-width="2" fill="none"/>
+<text x="-26" y="275" fill="#3DD68C" font-size="9">TRIPPED 11:41</text>
+<rect x="-42" y="360" width="84" height="64" fill="#11161C" stroke="#222833"/><text x="-34" y="380" fill="#D9DEE5" font-size="13" font-weight="600">LS-10</text><text x="-34" y="396" fill="#7D8694" font-family="Archivo">Lunch · cut</text><text x="-34" y="413" fill="#7D8694" font-weight="600">0.02 kW</text></g>
+<!-- services: thinner -->
+<g transform="translate(790,0)"><line x1="0" y1="180" x2="0" y2="340" stroke="#D9DEE5" stroke-width="2.4"/><circle cx="0" cy="210" r="4" fill="#E5484D"/><rect x="-36" y="360" width="72" height="48" fill="#141920" stroke="#3A414D"/><text x="-28" y="380" fill="#D9DEE5" font-weight="600">COR-2</text><text x="-28" y="398" fill="#D9DEE5">0.90 kW</text></g>
+<g transform="translate(870,0)"><line x1="0" y1="180" x2="0" y2="340" stroke="#D9DEE5" stroke-width="1.5"/><circle cx="0" cy="210" r="4" fill="#E5484D"/><rect x="-32" y="360" width="64" height="48" fill="#141920" stroke="#3A414D"/><text x="-24" y="380" fill="#D9DEE5" font-weight="600">WR-1/2</text><text x="-24" y="398" fill="#D9DEE5">0.26 kW</text></g>
+<g transform="translate(950,0)"><line x1="0" y1="180" x2="0" y2="340" stroke="#D9DEE5" stroke-width="1.2"/><circle cx="0" cy="210" r="4" fill="#E5484D"/><rect x="-32" y="360" width="64" height="48" fill="#141920" stroke="#3A414D"/><text x="-24" y="380" fill="#D9DEE5" font-weight="600">STR-2</text><text x="-24" y="398" fill="#D9DEE5">0.12 kW</text></g>
+</g>
+<g font-size="10.5" fill="#7D8694"><circle cx="30" cy="470" r="4" fill="#E5484D"/><text x="40" y="474">Energised</text><circle cx="120" cy="470" r="4" fill="#3DD68C"/><text x="130" y="474">Tripped</text><line x1="200" y1="470" x2="230" y2="470" stroke="#F5A524" stroke-width="3" stroke-dasharray="6 4"/><text x="236" y="474">Power into an empty room</text><text x="420" y="474">Line weight = kW</text></g>
+</svg></section>
+<aside class="q"><h2>Waste · trip from here</h2>
+<div class="row"><span class="lamp"></span><b>LS-08</b><span>AC + lights<small>empty since 11:30</small></span><span class="kw">2.10</span><button class="trip">TRIP</button></div>
+<div class="row"><span class="lamp"></span><b>LS-09</b><span>12 lights, 4 fans<small>empty since 11:30</small></span><span class="kw">1.88</span><button class="trip">TRIP</button></div>
+<div class="row"><span class="lamp"></span><b>LS-03</b><span>Smartboard, 6 lights<small>empty since 11:30</small></span><span class="kw">1.60</span><button class="trip">TRIP</button></div>
+<div class="row"><span class="lamp"></span><b>LS-04</b><span>4 fans, 5 lights<small>empty since 11:30</small></span><span class="kw">1.30</span><button class="trip">TRIP</button></div>
+<h2 style="margin-top:22px">Next</h2>
+<div class="row"><span></span><b>12:20</b><span>Period 6<small>LS-03 · LS-08 · LS-10 re-energise</small></span><span></span></div>
+<div class="row"><span></span><b>14:00</b><span>DSA remedial<small>LS-08 · auto-booked</small></span><span></span></div>
+</aside>
+<section class="rib"><h2>Incomer kW · today</h2>
+<svg width="1010" height="118" viewBox="0 0 1010 118"><path d="M0 112 L200 110 L230 58 L300 30 L380 26 L420 28 L445 66 L480 68 L500 36 L560 32 L620 34 L700 36 L740 88 L800 106 L1010 110" fill="none" stroke="#D9DEE5" stroke-width="1.4"/><path d="M420 28 L445 66 L480 68 L480 118 L420 118Z" fill="rgba(245,165,36,.28)"/><line x1="472" y1="0" x2="472" y2="118" stroke="#D9DEE5" stroke-dasharray="2 3"/></svg>
+<div class="ax"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+</section>
+</body></html>

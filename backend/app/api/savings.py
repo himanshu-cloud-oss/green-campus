@@ -16,7 +16,20 @@ from app.services.savings_service import (
     record_savings_run,
 )
 
+from app.services.savings_model import SavingsModelRequest, run_model
+
 router = APIRouter(prefix="/savings", tags=["Savings Analytics"])
+
+
+@router.post("/model")
+def savings_model(payload: SavingsModelRequest, db: Session = Depends(get_db)):
+    """Annual baseline vs automated energy for the pilot floor, using inventory + timetable."""
+    return run_model(db, payload)
+
+
+@router.get("/model/defaults")
+def savings_model_defaults():
+    return SavingsModelRequest().model_dump()
 
 
 @router.get("/estimate", response_model=SavingsEstimateResponse)
@@ -95,5 +108,7 @@ def get_whatif_analysis(db: Session = Depends(get_db)):
     if classroom_count == 0:
         classroom_count = 5
 
-    res = calculate_whatif(classroom_count=classroom_count)
+    loads = [c.connected_load_kw for c in db.query(Classroom).all() if c.connected_load_kw]
+    avg_load = round(sum(loads) / len(loads), 2) if loads else None
+    res = calculate_whatif(classroom_count=classroom_count, load_kw=avg_load)
     return res
