@@ -62,7 +62,7 @@ export const ReportPage: React.FC = () => {
             aria-selected={tab === t.id}
             onClick={() => setTab(t.id)}
             className={`text-xs px-2.5 py-1 rounded-[3px] border snap ${
-              tab === t.id ? 'border-panel-ink bg-panel-seam text-panel-ink' : 'border-panel-seam text-panel-muted hover:border-panel-wire'
+              tab === t.id ? 'border-accent bg-accent/10 text-accent font-semibold' : 'border-panel-seam text-panel-muted hover:border-panel-wire'
             }`}
           >
             {t.label}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Classroom, ExtraClassBooking, PeriodDefinition, TimetableEntry } from '../../types';
+import { alpha, deptColor, useTheme } from '../../theme';
 
 export interface TimetableGridProps {
   entries: TimetableEntry[];
@@ -16,7 +17,9 @@ const overlaps = (b: ExtraClassBooking, p: PeriodDefinition) =>
   toMin(b.start_time) < toMin(p.end_time) && toMin(b.end_time) > toMin(p.start_time);
 
 /** Periods down, rooms across. Classes as text, extra classes on solid Wire, lunch hatched. */
-export const TimetableGrid: React.FC<TimetableGridProps> = ({ entries, bookings, periods, rooms, currentPeriod }) => (
+export const TimetableGrid: React.FC<TimetableGridProps> = ({ entries, bookings, periods, rooms, currentPeriod }) => {
+  const { p: pal } = useTheme();
+  return (
   <div className="overflow-x-auto">
     <table className="w-full border-collapse text-xs" style={{ minWidth: 120 + rooms.length * 150 }}>
       <thead>
@@ -41,7 +44,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({ entries, bookings,
                   <span className="block num text-[11px] text-panel-muted">{p.start_time}–{p.end_time}</span>
                 </th>
                 <td colSpan={rooms.length} className="border-l border-panel-seam p-1">
-                  <div className="h-7 bg-[repeating-linear-gradient(135deg,#222833_0_3px,transparent_3px_7px)]" aria-label="Lunch break" />
+                  <div className="h-7 bg-[repeating-linear-gradient(135deg,rgb(var(--c-seam))_0_3px,transparent_3px_7px)]" aria-label="Lunch break" />
                 </td>
               </tr>
             );
@@ -59,14 +62,14 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({ entries, bookings,
                 return (
                   <td key={r.id} className="border-l border-panel-seam px-1.5 py-1.5">
                     {extra ? (
-                      <div className="bg-panel-wire rounded-[2px] px-1.5 py-1" title={`Extra class · ${extra.subject ?? ''}`}>
-                        <div className="truncate text-panel-ink">Extra · {extra.subject || 'untitled'}</div>
-                        <div className="num text-[11px] text-panel-ink/70">{extra.start_time}–{extra.end_time}</div>
+                      <div className="bg-accent/15 border border-accent/40 rounded-[3px] px-1.5 py-1" title={`Extra class · ${extra.subject ?? ''}`}>
+                        <div className="truncate text-panel-ink font-semibold">Extra · {extra.subject || 'untitled'}</div>
+                        <div className="num text-[11px] text-panel-muted">{extra.start_time}–{extra.end_time}</div>
                       </div>
                     ) : entry ? (
-                      <div className="px-1.5 py-1" title={`${entry.subject} · ${entry.teacher}`}>
+                      <div className="px-1.5 py-1 rounded-[3px]" style={{ background: alpha(deptColor(pal, entry.section), pal.tint) }} title={`${entry.subject} · ${entry.teacher}`}>
                         <div className="truncate text-panel-ink">{entry.subject}</div>
-                        <div className="truncate text-[11px] text-panel-muted">{entry.teacher}{entry.section ? ` · ${entry.section}` : ''}</div>
+                        <div className="truncate text-[11px] text-panel-muted">{entry.teacher}{entry.section ? <> · <span className="font-semibold" style={{ color: deptColor(pal, entry.section) }}>{entry.section}</span></> : ''}</div>
                       </div>
                     ) : (
                       <div className="px-1.5 py-1 text-panel-muted" aria-label="Free">—</div>
@@ -81,3 +84,4 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({ entries, bookings,
     </table>
   </div>
 );
+};

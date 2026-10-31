@@ -21,8 +21,9 @@ import {
   HealthStatus,
 } from '../types';
 
-// Dev talks to the local backend; a production build calls the same origin (Vercel serves /api/*).
-const API_BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://localhost:8000' : '');
+// Same origin everywhere: in dev Vite proxies /api to the backend (so other devices on the LAN work),
+// in production Vercel serves /api/*. Set VITE_API_URL only to point at a separate backend.
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 export const apiClient = axios.create({
   baseURL: API_BASE,

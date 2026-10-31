@@ -43,12 +43,12 @@ export const AlertCard: React.FC<AlertRowProps> = ({ alert, onAcknowledge, onRes
       <span className={`hidden lg:block text-xs ${state === 'Open' ? 'text-panel-ink' : 'text-panel-muted'}`}>{state}</span>
       <div className="col-start-2 lg:col-start-auto flex flex-wrap lg:flex-nowrap items-center gap-x-3 gap-y-1 lg:justify-end">
         {!resolved && !acked && (
-          <button onClick={() => onAcknowledge(alert.id)} className="text-xs border border-panel-wire hover:border-panel-ink px-2.5 py-1 rounded-[3px] snap">
+          <button onClick={() => onAcknowledge(alert.id)} className="text-xs border border-panel-wire hover:border-accent hover:text-accent px-2.5 py-1 rounded-[3px] snap">
             Acknowledge
           </button>
         )}
         {!resolved && (
-          <button onClick={() => onResolve(alert.id)} className="text-xs border border-panel-wire hover:border-panel-ink px-2.5 py-1 rounded-[3px] snap">
+          <button onClick={() => onResolve(alert.id)} className="text-xs border border-panel-wire hover:border-accent hover:text-accent px-2.5 py-1 rounded-[3px] snap">
             Resolve
           </button>
         )}

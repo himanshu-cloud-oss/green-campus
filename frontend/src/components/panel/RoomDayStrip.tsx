@@ -43,7 +43,7 @@ export const RoomDayStrip: React.FC<Props> = ({ date, rooms, chosen, alternative
             <span className="num text-xs py-1.5">{r.code}<span className="text-panel-muted"> {r.capacity}</span></span>
             <div className="relative h-7 border-t border-panel-seam">
               {hours.map(h => <span key={h} className="absolute top-0 bottom-0 w-px bg-panel-seam/60" style={{ left: pct(h * 60) }} />)}
-              <span className="absolute top-1 bottom-1 bg-[repeating-linear-gradient(135deg,#222833_0_3px,transparent_3px_7px)]" style={span('11:30', '12:20')} title="Lunch" />
+              <span className="absolute top-1 bottom-1 bg-[repeating-linear-gradient(135deg,rgb(var(--c-seam))_0_3px,transparent_3px_7px)]" style={span('11:30', '12:20')} title="Lunch" />
               {classes.filter(c => c.classroom_id === r.classroomId).map(c => (
                 <span key={c.id} className="absolute top-1 bottom-1 bg-panel-seam border border-panel-wire" style={span(c.start_time, c.end_time)} title={`${c.subject} · ${c.teacher}`} />
               ))}
@@ -51,10 +51,10 @@ export const RoomDayStrip: React.FC<Props> = ({ date, rooms, chosen, alternative
                 <span key={b.id} className="absolute top-1 bottom-1 bg-panel-wire" style={span(b.start_time, b.end_time)} title={`Extra: ${b.subject}`} />
               ))}
               {alts.filter(a => a.room === r.code).map(a => (
-                <span key={a.start_time} className="absolute top-0.5 bottom-0.5 border border-dashed border-panel-ink" style={span(a.start_time, a.end_time)} title={`Alternative ${a.start_time} · ${a.est_kwh} kWh`} />
+                <span key={a.start_time} className="absolute top-0.5 bottom-0.5 border-2 border-dashed border-accent" style={span(a.start_time, a.end_time)} title={`Alternative ${a.start_time} · ${a.est_kwh} kWh`} />
               ))}
               {chosen.date === date && chosen.room === r.code && (
-                <span className="absolute top-0.5 bottom-0.5 bg-panel-ink" style={span(chosen.start_time, chosen.end_time)} title={`Pick ${chosen.start_time} · ${chosen.est_kwh} kWh`} />
+                <span className="absolute top-0.5 bottom-0.5 bg-accent" style={span(chosen.start_time, chosen.end_time)} title={`Pick ${chosen.start_time} · ${chosen.est_kwh} kWh`} />
               )}
             </div>
           </React.Fragment>
@@ -63,9 +63,9 @@ export const RoomDayStrip: React.FC<Props> = ({ date, rooms, chosen, alternative
       <figcaption className="flex flex-wrap gap-4 mt-2 text-xs text-panel-muted">
         <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-panel-seam border border-panel-wire" />Timetabled class</span>
         <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-panel-wire" />Extra class</span>
-        <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-panel-ink" />Pick</span>
-        <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 border border-dashed border-panel-ink" />Alternative</span>
-        <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-[repeating-linear-gradient(135deg,#3A414D_0_2px,transparent_2px_5px)]" />Lunch</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-accent" />Pick</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 border-2 border-dashed border-accent" />Alternative</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-[repeating-linear-gradient(135deg,rgb(var(--c-wire))_0_2px,transparent_2px_5px)]" />Lunch</span>
       </figcaption>
     </figure>
   );

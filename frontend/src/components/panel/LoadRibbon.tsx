@@ -1,6 +1,7 @@
 import React from 'react';
 import { Area, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { SeriesPoint } from '../../services/pilot';
+import { useTheme } from '../../theme';
 
 const hhmm = (iso: string) => iso.slice(11, 16);
 
@@ -26,6 +27,7 @@ const RibbonTooltip: React.FC<{ active?: boolean; payload?: { payload: SeriesPoi
 
 /** Today's incomer kW with the waste share shaded. Clicking a point replays the floor at that time. */
 export const LoadRibbon: React.FC<Props> = ({ points, at, onPick, height = 132 }) => {
+  const { p } = useTheme();
   const atKey = at ? at.slice(0, 15) : null;
   const match = atKey ? points.find(p => p.t.slice(0, 15) === atKey)?.t : undefined;
   return (
@@ -43,21 +45,21 @@ export const LoadRibbon: React.FC<Props> = ({ points, at, onPick, height = 132 }
           dataKey="t"
           tickFormatter={hhmm}
           interval={Math.max(1, Math.floor(points.length / 8))}
-          tick={{ fill: '#7D8694', fontSize: 10.5, fontFamily: 'JetBrains Mono' }}
-          axisLine={{ stroke: '#222833' }}
+          tick={{ fill: p.muted, fontSize: 10.5, fontFamily: 'JetBrains Mono' }}
+          axisLine={{ stroke: p.seam }}
           tickLine={false}
         />
         <YAxis
-          tick={{ fill: '#7D8694', fontSize: 10.5, fontFamily: 'JetBrains Mono' }}
+          tick={{ fill: p.muted, fontSize: 10.5, fontFamily: 'JetBrains Mono' }}
           axisLine={false}
           tickLine={false}
           width={46}
           tickFormatter={v => `${v}`}
         />
-        <Tooltip content={<RibbonTooltip />} cursor={{ stroke: '#7D8694', strokeDasharray: '2 3' }} isAnimationActive={false} />
-        <Area dataKey="waste_kw" type="stepAfter" stroke="none" fill="#C27A12" fillOpacity={0.55} isAnimationActive={false} />
-        <Line dataKey="kw" type="monotone" stroke="#D9DEE5" strokeWidth={2} dot={false} isAnimationActive={false} activeDot={{ r: 4, fill: '#D9DEE5', stroke: '#0E1116', strokeWidth: 2 }} />
-        {match && <ReferenceLine x={match} stroke="#D9DEE5" strokeWidth={1.5} strokeDasharray="3 3" />}
+        <Tooltip content={<RibbonTooltip />} cursor={{ stroke: p.muted, strokeDasharray: '2 3' }} isAnimationActive={false} />
+        <Area dataKey="waste_kw" type="stepAfter" stroke="none" fill={p.chartSaved} fillOpacity={0.55} isAnimationActive={false} />
+        <Line dataKey="kw" type="monotone" stroke={p.ink} strokeWidth={2} dot={false} isAnimationActive={false} activeDot={{ r: 4, fill: p.ink, stroke: p.ground, strokeWidth: 2 }} />
+        {match && <ReferenceLine x={match} stroke={p.accent} strokeWidth={1.5} strokeDasharray="3 3" />}
       </ComposedChart>
     </ResponsiveContainer>
   );

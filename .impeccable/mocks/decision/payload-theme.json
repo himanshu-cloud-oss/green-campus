@@ -1,0 +1,55 @@
+{
+  "title": "Light and colour for the Green Campus console",
+  "question": "The client found the pages too monochrome and asked for light mode. Pick the look for the app. Every option adds a blue action colour, one colour per load type and room-type tints; the single-line diagram, amber-for-waste and the red/green panel lamps stay. Use the steer box to pair a light and a dark option (e.g. 'Drawing Sheet for light, Dusk for dark').",
+  "options": [
+    {
+      "id": "theme-sheet",
+      "label": "Drawing Sheet",
+      "kicker": "LIGHT",
+      "lineage": "issued electrical drawings: white sheet, blue-black ink, drafting blue",
+      "thesis": "Clean white working surface; colour carried by load types, room tints and a blue action colour.",
+      "palette": ["#F3F5F8", "#FFFFFF", "#142030", "#1F5FD1", "#2563C9", "#0E8A7A", "#7A4FD0", "#BC3F78", "#B4690E"],
+      "materials": ["white panels with 1px seams", "drafting grid", "soft room tints"],
+      "viewport": "Light rail and top bar, blue primary button, rooms tinted by type, device rows with coloured load-type chips.",
+      "risk": "Calmest of the four; the colour is present but restrained, so it may still read as 'business' rather than lively.",
+      "html": ".impeccable/mocks/decision/theme-sheet.html"
+    },
+    {
+      "id": "theme-daylight",
+      "label": "Daylight",
+      "kicker": "LIGHT · MORE COLOUR",
+      "lineage": "same sheet, with a navy control strip like a panel's nameplate",
+      "thesis": "Light pages framed by a navy rail and top bar; stronger room tints so the floor plan reads at a glance.",
+      "palette": ["#14284B", "#EEF2F7", "#FFFFFF", "#13203A", "#1F5FD1", "#0E8A7A", "#7A4FD0", "#BC3F78", "#B4690E"],
+      "materials": ["navy chrome", "tinted room fills", "coloured chips"],
+      "viewport": "Navy rail and top bar with white text, light content area, plan tiles clearly tinted by room type.",
+      "risk": "Most colourful; the navy frame is a strong brand moment that must stay consistent on every page.",
+      "html": ".impeccable/mocks/decision/theme-daylight.html"
+    },
+    {
+      "id": "theme-dusk",
+      "label": "Dusk",
+      "kicker": "SLIGHTLY DARK",
+      "lineage": "the night panel with the lights half on: slate instead of black",
+      "thesis": "A softer slate-blue dark that is easier on non-technical eyes, with brighter load and room colours.",
+      "palette": ["#1B2230", "#212A3A", "#E8EDF4", "#6EA8FF", "#3CC9B0", "#B79CFF", "#F07AAE", "#F5A524"],
+      "materials": ["slate panels", "brighter chips", "tinted rooms"],
+      "viewport": "Slate rail and top bar, blue primary button, rooms tinted by type, coloured load chips on slate.",
+      "risk": "Still a dark theme; pair it with a light option for the client's light mode.",
+      "html": ".impeccable/mocks/decision/theme-dusk.html"
+    },
+    {
+      "id": "theme-night",
+      "label": "Night + colour",
+      "kicker": "CURRENT DARK, COLOURISED",
+      "lineage": "today's night panel with the new colour roles added",
+      "thesis": "Keeps the current near-black panel but adds the blue action colour, load-type colours and room tints.",
+      "palette": ["#0E1116", "#141920", "#D9DEE5", "#6EA8FF", "#3CC9B0", "#B79CFF", "#F07AAE", "#F5A524"],
+      "materials": ["graphite", "1px seams", "coloured chips"],
+      "viewport": "The current dark console, now with a blue primary button, tinted rooms and coloured load chips.",
+      "risk": "Least change from today; the client found the current dark heavy, so best only as the dark option.",
+      "html": ".impeccable/mocks/decision/theme-night.html"
+    }
+  ],
+  "steer": true
+}

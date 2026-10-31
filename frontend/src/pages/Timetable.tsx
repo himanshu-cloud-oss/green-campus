@@ -9,6 +9,8 @@ import { api } from '../services/api';
 import { errorMessage } from '../services/pilot';
 import { Classroom } from '../types';
 import { WEEKDAYS, Weekday } from '../utils/timeUtils';
+import { alpha, deptColor, useTheme } from '../theme';
+import { usePaths } from '../styles/StyleContext';
 
 const iso = (d: Date) => d.toLocaleDateString('en-CA');
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
@@ -29,6 +31,8 @@ function weekDates(): Record<Weekday, string> {
 }
 
 export const Timetable: React.FC = () => {
+  const path = usePaths();
+  const { p } = useTheme();
   const clock = useLiveClock();
   const dates = useMemo(weekDates, []);
   const todayName = (WEEKDAYS as readonly string[]).includes(clock.weekday) ? (clock.weekday as Weekday) : undefined;
@@ -79,7 +83,7 @@ export const Timetable: React.FC = () => {
             <dd className="num text-[15px] font-semibold">{dayBookings.length}</dd>
           </div>
         </dl>
-        <Link to="/book" className="ml-auto text-xs border border-panel-wire hover:border-panel-ink px-3 py-1.5 rounded-[3px] snap">
+        <Link to={path('/book')} className="ml-auto text-xs border border-panel-wire hover:border-accent hover:text-accent px-3 py-1.5 rounded-[3px] snap">
           Book extra class
         </Link>
       </div>
@@ -97,7 +101,7 @@ export const Timetable: React.FC = () => {
                   aria-pressed={on}
                   onClick={() => setRoomFilter(r.id)}
                   className={`text-xs px-2.5 py-1 rounded-[3px] border snap ${r.id === 'ALL' ? '' : 'num'} ${
-                    on ? 'border-panel-ink bg-panel-seam text-panel-ink' : 'border-panel-seam text-panel-muted hover:border-panel-wire'
+                    on ? 'border-accent bg-accent/10 text-accent font-semibold' : 'border-panel-seam text-panel-muted hover:border-panel-wire'
                   }`}
                 >
                   {r.name}
@@ -119,9 +123,11 @@ export const Timetable: React.FC = () => {
         )}
 
         <div className="flex flex-wrap gap-4 px-4 py-2 border-t border-panel-seam text-xs text-panel-muted">
-          <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 border border-panel-seam" />Timetabled class</span>
-          <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-panel-wire" />Extra class</span>
-          <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-[repeating-linear-gradient(135deg,#3A414D_0_2px,transparent_2px_5px)]" />Lunch</span>
+          {([['CSE', 'CSE classes'], ['ECE', 'ECE classes'], ['ME', 'ME classes']] as const).map(([d, l]) => (
+            <span key={d} className="flex items-center gap-1.5"><span className="w-4 h-2.5 rounded-[2px]" style={{ background: alpha(deptColor(p, d), 0.45) }} />{l}</span>
+          ))}
+          <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 rounded-[2px] bg-accent/15 border border-accent/40" />Extra class</span>
+          <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-[repeating-linear-gradient(135deg,rgb(var(--c-wire))_0_2px,transparent_2px_5px)]" />Lunch</span>
           <span className="flex items-center gap-1.5"><span className="w-4 h-2.5 bg-panel-raised border border-panel-seam" />Period running now</span>
         </div>
       </section>

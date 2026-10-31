@@ -4,10 +4,12 @@ import { Sidebar } from './Sidebar';
 import { TopNav } from './TopNav';
 import { CommandPalette } from './CommandPalette';
 import { NAV_ITEMS } from './navItems';
+import { usePaths } from '../../styles/StyleContext';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const navigate = useNavigate();
+  const p = usePaths();
   const closePalette = useCallback(() => setPaletteOpen(false), []);
 
   useEffect(() => {
@@ -21,11 +23,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
       if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
       const item = NAV_ITEMS.find(n => n.key === e.key);
-      if (item) navigate(item.to);
+      if (item) navigate(p(item.to));
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [navigate]);
+  }, [navigate, p]);
 
   return (
     <div className="min-h-screen bg-panel-ground text-panel-ink">

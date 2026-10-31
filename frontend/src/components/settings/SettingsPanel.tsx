@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { useSettings } from '../../hooks/useSettings';
 import { Setting } from '../../types';
+import { usePaths } from '../../styles/StyleContext';
 
 interface KeyInfo {
   label: string;
@@ -50,6 +51,7 @@ const Row: React.FC<{ s: Setting; value: string; dirty: boolean; onChange: (v: s
 };
 
 export const SettingsPanel: React.FC = () => {
+  const p = usePaths();
   const { settings, valueOf, edit, discard, changed, isLoading, isSaving, error, savedAt, save } = useSettings();
   const inUse = settings.filter(s => KEYS[s.key]?.usedBy);
   const unused = settings.filter(s => !KEYS[s.key]?.usedBy);
@@ -84,8 +86,8 @@ export const SettingsPanel: React.FC = () => {
           <h2 className="section-title">Stored, not read yet · {unused.length}</h2>
           <p className="text-xs text-panel-muted mt-0.5 max-w-2xl">
             Kept from the first version. Nothing uses them today: device loads come from{' '}
-            <Link to="/floors" className="text-panel-ink underline underline-offset-4">Floor maps</Link>, and the{' '}
-            <Link to="/savings" className="text-panel-ink underline underline-offset-4">Savings model</Link> takes its own tariff and emission inputs.
+            <Link to={p('/floors')} className="text-panel-ink underline underline-offset-4">Floor maps</Link>, and the{' '}
+            <Link to={p('/savings')} className="text-panel-ink underline underline-offset-4">Savings model</Link> takes its own tariff and emission inputs.
           </p>
         </div>
         <ul>{unused.map(s => <Row key={s.key} s={s} value={valueOf(s.key)} dirty={dirtyKeys.has(s.key)} onChange={v => edit(s.key, v)} />)}</ul>
@@ -106,7 +108,7 @@ export const SettingsPanel: React.FC = () => {
           <button
             type="submit"
             disabled={changed.length === 0 || isSaving}
-            className="bg-panel-ink text-panel-ground text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-white snap disabled:opacity-40 disabled:cursor-not-allowed"
+            className="bg-accent text-accent-on text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-accent-hover snap disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isSaving ? 'Saving…' : 'Save changes'}
           </button>

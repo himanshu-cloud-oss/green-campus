@@ -18,7 +18,7 @@ const FILTERS: { id: Alert['severity'] | 'ALL' | 'OPEN'; label: string }[] = [
 ];
 
 const chip = (on: boolean) =>
-  `text-xs px-2.5 py-1 rounded-[3px] border snap ${on ? 'border-panel-ink bg-panel-seam text-panel-ink' : 'border-panel-seam text-panel-muted hover:border-panel-wire'}`;
+  `text-xs px-2.5 py-1 rounded-[3px] border snap ${on ? 'border-accent bg-accent/10 text-accent font-semibold' : 'border-panel-seam text-panel-muted hover:border-panel-wire'}`;
 
 export const AlertsEvents: React.FC = () => {
   const { alerts, openCount, unreadCount, isLoading, error, acknowledgeAlert, resolveAlert, deleteAlert, refetch } = useAlerts();
@@ -96,7 +96,7 @@ export const AlertsEvents: React.FC = () => {
                   <button
                     disabled={busy}
                     onClick={() => run(() => executeSimulation(sim.id))}
-                    className="flex items-center gap-1.5 border border-panel-wire hover:border-panel-ink text-[11px] font-semibold tracking-[0.1em] px-2.5 py-1 rounded-[3px] snap disabled:opacity-40"
+                    className="flex items-center gap-1.5 border border-panel-wire hover:border-accent hover:text-accent text-[11px] font-semibold tracking-[0.1em] px-2.5 py-1 rounded-[3px] snap disabled:opacity-40"
                   >
                     <Power className="w-3 h-3" strokeWidth={1.6} /> CUT NOW
                   </button>
@@ -131,7 +131,7 @@ export const AlertsEvents: React.FC = () => {
               period && testRoom !== null &&
               run(() => triggerNoShow(testRoom, `Period ${period.period_number}`, period.start_time, period.end_time))
             }
-            className="text-xs border border-panel-wire hover:border-panel-ink px-3 py-1.5 rounded-[3px] snap disabled:opacity-40"
+            className="text-xs border border-panel-wire hover:border-accent hover:text-accent px-3 py-1.5 rounded-[3px] snap disabled:opacity-40"
           >
             Start test
           </button>

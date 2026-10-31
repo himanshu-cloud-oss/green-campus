@@ -1,18 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 
-// Graphite night-panel world. Legacy pages use slate/cyan/purple utility classes;
-// those scales are remapped here so every page sits in the same world.
-const graphite = {
-  50: '#F2F4F7', 100: '#E3E7EC', 200: '#D9DEE5', 300: '#B4BCC7', 400: '#9AA3B0',
-  500: '#7D8694', 600: '#4A525E', 700: '#2C333E', 800: '#222833', 900: '#161A21', 950: '#0E1116',
-};
-const ink = {
-  50: '#F5F7FA', 100: '#E8ECF1', 200: '#DDE2E9', 300: '#D9DEE5', 400: '#E6EAF0',
-  500: '#D9DEE5', 600: '#B4BCC7', 700: '#4A525E', 800: '#2C333E', 900: '#1A1F27', 950: '#12161C',
-};
-const steel = {
-  50: '#EEF3FA', 100: '#DCE6F4', 200: '#BCD0EA', 300: '#93B2DD', 400: '#7499CF', 500: '#5E86C2',
-  600: '#4B6EA5', 700: '#3D5986', 800: '#2E4466', 900: '#1E2D45', 950: '#141F31',
+// Every colour is a theme role from src/theme.ts, exposed as RGB-channel CSS variables so
+// light ("Daylight") and dark ("Dusk") switch at runtime. Legacy slate/cyan/purple scales map
+// onto the same roles so older markup themes correctly too.
+const v = name => `rgb(var(--c-${name}) / <alpha-value>)`;
+const roleScale = (light, mid, low) => ({
+  50: v('ink'), 100: v('ink'), 200: v('ink'), 300: v(light), 400: v(mid), 500: v(mid),
+  600: v(low), 700: v('wire'), 800: v('seam'), 900: v('raised'), 950: v('ground'),
+});
+const accentScale = {
+  50: v('accent'), 100: v('accent'), 200: v('accent'), 300: v('accent'), 400: v('accent'), 500: v('accent'),
+  600: v('accent-hover'), 700: v('accent-hover'), 800: v('seam'), 900: v('raised'), 950: v('ground'),
 };
 
 export default {
@@ -20,23 +18,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        slate: graphite,
-        cyan: ink,
-        purple: steel,
-        violet: steel,
+        slate: roleScale('ink', 'muted', 'wire'),
+        cyan: roleScale('ink', 'ink', 'muted'),
+        purple: accentScale,
+        violet: accentScale,
         panel: {
-          ground: '#0E1116',
-          rail: '#0A0C10',
-          raised: '#141920',
-          seam: '#222833',
-          wire: '#3A414D',
-          ink: '#D9DEE5',
-          muted: '#7D8694',
-          faint: '#5B6371',
+          ground: v('ground'),
+          rail: v('rail'),
+          raised: v('raised'),
+          seam: v('seam'),
+          wire: v('wire'),
+          grid: v('grid'),
+          ink: v('ink'),
+          muted: v('muted'),
+          faint: v('muted'),
         },
-        waste: { DEFAULT: '#F5A524', deep: '#C27A12', field: '#191307' },
-        lamp: { on: '#E5484D', off: '#3DD68C' },
-        chart: { base: '#5E86C2', saved: '#C27A12' },
+        chrome: { DEFAULT: v('top'), ink: v('top-ink'), rail: v('rail'), 'rail-ink': v('rail-ink'), 'rail-active': v('rail-active'), 'rail-active-ink': v('rail-active-ink') },
+        accent: { DEFAULT: v('accent'), hover: v('accent-hover'), on: v('on-accent') },
+        waste: { DEFAULT: v('waste'), deep: v('waste-deep'), field: v('waste-field') },
+        lamp: { on: v('lamp-on'), off: v('lamp-off') },
+        chart: { base: v('chart-base'), saved: v('chart-saved') },
+        cat: { ac: v('cat-ac'), fan: v('cat-fan'), light: v('cat-light'), av: v('cat-av'), neutral: v('cat-neutral') },
       },
       fontFamily: {
         sans: ['Archivo', 'system-ui', 'sans-serif'],

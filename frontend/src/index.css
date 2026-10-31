@@ -3,15 +3,16 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-  --ground: #0e1116;
-  --rail: #0a0c10;
-  --raised: #141920;
-  --seam: #222833;
-  --wire: #3a414d;
-  --ink: #d9dee5;
-  --muted: #7d8694;
-  --waste: #f5a524;
+  /* Colour roles are written here at runtime by applyTheme() in src/theme.ts. */
+  --ground: rgb(var(--c-ground));
+  --rail: rgb(var(--c-rail));
+  --raised: rgb(var(--c-raised));
+  --seam: rgb(var(--c-seam));
+  --wire: rgb(var(--c-wire));
+  --ink: rgb(var(--c-ink));
+  --muted: rgb(var(--c-muted));
+  --accent: rgb(var(--c-accent));
+  --waste: rgb(var(--c-waste));
 }
 
 html,
@@ -31,23 +32,23 @@ body {
 }
 
 ::selection {
-  background: rgba(217, 222, 229, 0.25);
-  color: #fff;
+  background: rgb(var(--c-accent) / 0.25);
+  color: inherit;
 }
 
 *:focus-visible {
-  outline: 1.5px solid var(--ink);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
 input,
 select,
 textarea {
-  caret-color: var(--ink);
+  caret-color: var(--accent);
 }
 
 ::placeholder {
-  color: #7d8694;
+  color: var(--muted);
 }
 
 ::-webkit-scrollbar {
@@ -84,8 +85,8 @@ textarea {
 
 /* Form controls in the panel language */
 .field {
-  @apply w-full bg-panel-ground border border-panel-seam rounded-[3px] px-2.5 py-1.5 text-[13px] text-panel-ink;
-  @apply hover:border-panel-wire focus:border-panel-ink focus:outline-none;
+  @apply w-full bg-panel-raised border border-panel-wire rounded-[3px] px-2.5 py-1.5 text-[13px] text-panel-ink;
+  @apply hover:border-panel-muted focus:border-accent focus:outline-none;
 }
 .field:disabled {
   @apply opacity-50;
