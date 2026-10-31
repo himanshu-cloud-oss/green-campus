@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CornerDownLeft } from 'lucide-react';
 import { NAV_ITEMS } from './navItems';
+import { usePaths } from '../../styles/StyleContext';
 import { pilot, LiveSnapshot } from '../../services/pilot';
 
 interface Command {
@@ -14,6 +15,7 @@ interface Command {
 /** Ctrl+K: jump to any page or room, or trip a wasting feeder, from the keyboard. */
 export const CommandPalette: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const navigate = useNavigate();
+  const p = usePaths();
   const [query, setQuery] = useState('');
   const [cursor, setCursor] = useState(0);
   const [live, setLive] = useState<LiveSnapshot | null>(null);
@@ -39,9 +41,9 @@ export const CommandPalette: React.FC<{ open: boolean; onClose: () => void }> = 
       navigate(to);
       onClose();
     };
-    const list: Command[] = NAV_ITEMS.map(n => ({ id: `nav-${n.to}`, label: n.name, hint: `Page · ${n.key}`, run: go(n.to) }));
+    const list: Command[] = NAV_ITEMS.map(n => ({ id: `nav-${n.to}`, label: n.name, hint: `Page · ${n.key}`, run: go(p(n.to)) }));
     for (const s of live?.spaces ?? []) {
-      list.push({ id: `room-${s.code}`, label: `${s.code} · ${s.name}`, hint: 'Show on floor panel', run: go(`/?room=${s.code}`) });
+      list.push({ id: `room-${s.code}`, label: `${s.code} · ${s.name}`, hint: 'Show on floor panel', run: go(p(`/?room=${s.code}`)) });
       if (s.waste_kw > 0 && !s.cut_armed) {
         list.push({
           id: `trip-${s.code}`,
@@ -56,9 +58,9 @@ export const CommandPalette: React.FC<{ open: boolean; onClose: () => void }> = 
         });
       }
     }
-    list.push({ id: 'book', label: 'Book an extra class', hint: 'Auto-pick room and slot', run: go('/book') });
+    list.push({ id: 'book', label: 'Book an extra class', hint: 'Auto-pick room and slot', run: go(p('/book')) });
     return list;
-  }, [live, navigate, onClose]);
+  }, [live, navigate, onClose, p]);
 
   const q = query.trim().toLowerCase();
   const results = q ? commands.filter(c => `${c.label} ${c.hint}`.toLowerCase().includes(q)) : commands;

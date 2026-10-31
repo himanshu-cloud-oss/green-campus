@@ -10,6 +10,7 @@ import { errorMessage } from '../services/pilot';
 import { Classroom } from '../types';
 import { WEEKDAYS, Weekday } from '../utils/timeUtils';
 import { alpha, deptColor, useTheme } from '../theme';
+import { usePaths } from '../styles/StyleContext';
 
 const iso = (d: Date) => d.toLocaleDateString('en-CA');
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
@@ -30,6 +31,7 @@ function weekDates(): Record<Weekday, string> {
 }
 
 export const Timetable: React.FC = () => {
+  const path = usePaths();
   const { p } = useTheme();
   const clock = useLiveClock();
   const dates = useMemo(weekDates, []);
@@ -81,7 +83,7 @@ export const Timetable: React.FC = () => {
             <dd className="num text-[15px] font-semibold">{dayBookings.length}</dd>
           </div>
         </dl>
-        <Link to="/book" className="ml-auto text-xs border border-panel-wire hover:border-accent hover:text-accent px-3 py-1.5 rounded-[3px] snap">
+        <Link to={path('/book')} className="ml-auto text-xs border border-panel-wire hover:border-accent hover:text-accent px-3 py-1.5 rounded-[3px] snap">
           Book extra class
         </Link>
       </div>

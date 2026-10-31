@@ -10,6 +10,7 @@ from app.api.forecast import router as forecast_router
 from app.api.audit import router as audit_router
 from app.api.inventory import router as inventory_router
 from app.api.telemetry import router as telemetry_router
+from app.api.hardware import router as hardware_router
 
 __all__ = [
     "classrooms_router",
@@ -23,4 +24,5 @@ __all__ = [
     "audit_router",
     "inventory_router",
     "telemetry_router",
+    "hardware_router",
 ]

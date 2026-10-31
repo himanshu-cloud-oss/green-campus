@@ -1,12 +1,12 @@
 /**
- * Two themes, one set of roles. "Daylight" (light, navy chrome) and "Dusk" (slate dark).
+ * Three themes (Daylight, Dusk, Night), one set of roles. "Daylight" (light, navy chrome) and "Dusk" (slate dark).
  * This file is the single source of colour: applyTheme() writes every role as an
  * RGB-channel CSS variable (used by Tailwind as rgb(var(--c-x) / alpha)), and
  * useTheme() hands the same hex values to SVG and chart code.
  */
 import { createContext, useContext } from 'react';
 
-export type ThemeName = 'light' | 'dark';
+export type ThemeName = 'light' | 'dark' | 'night' | 'tree' | 'site';
 
 export interface Palette {
   // surfaces
@@ -51,9 +51,43 @@ export const PALETTES: Record<ThemeName, Palette> = {
     kindClass: '#6EA8FF', kindStaff: '#B79CFF', kindService: '#9AA6B8',
     tint: 0.14,
   },
+  night: {
+    ground: '#0E1116', raised: '#141920', seam: '#222833', wire: '#3A414D', grid: '#151A21',
+    ink: '#D9DEE5', muted: '#7D8694',
+    rail: '#0A0C10', railInk: '#7D8694', railActive: '#222833', railActiveInk: '#D9DEE5', top: '#0E1116', topInk: '#D9DEE5',
+    accent: '#D9DEE5', accentHover: '#FFFFFF', onAccent: '#0E1116',
+    waste: '#F5A524', wasteDeep: '#C27A12', wasteField: '#191307', lampOn: '#E5484D', lampOff: '#3DD68C',
+    chartBase: '#5E86C2', chartSaved: '#C27A12',
+    catAc: '#8A93A1', catFan: '#8A93A1', catLight: '#8A93A1', catAv: '#8A93A1', catNeutral: '#8A93A1',
+    kindClass: '#8A93A1', kindStaff: '#8A93A1', kindService: '#8A93A1',
+    tint: 0.06,
+  },
+  /** Resource Tree: warm-neutral light admin console, dark warm header, blue actions. */
+  tree: {
+    ground: '#F2F1EF', raised: '#FFFFFF', seam: '#D9D5D1', wire: '#C4BEB8', grid: '#E9E7E4',
+    ink: '#24211F', muted: '#6B645F',
+    rail: '#E9E7E4', railInk: '#4A4440', railActive: '#2F6FDB', railActiveInk: '#FFFFFF', top: '#2A2624', topInk: '#F2EEEB',
+    accent: '#2F6FDB', accentHover: '#2759B3', onAccent: '#FFFFFF',
+    waste: '#A35C00', wasteDeep: '#B8740F', wasteField: '#FFF1DB', lampOn: '#D9443B', lampOff: '#2E9E5B',
+    chartBase: '#3E6FC0', chartSaved: '#B8740F',
+    catAc: '#2563C9', catFan: '#0E8A7A', catLight: '#7A4FD0', catAv: '#BC3F78', catNeutral: '#6B645F',
+    kindClass: '#2563C9', kindStaff: '#7A4FD0', kindService: '#0E8A7A',
+    tint: 0.1,
+  },
+  /** Site Controller: warm charcoal network-controller look, teal actions. */
+  site: {
+    ground: '#1E1C1B', raised: '#2A2725', seam: '#3B3734', wire: '#55504C', grid: '#252220',
+    ink: '#EEEAE7', muted: '#ADA6A2',
+    rail: '#181615', railInk: '#ADA6A2', railActive: '#2F2B29', railActiveInk: '#EEEAE7', top: '#1E1C1B', topInk: '#EEEAE7',
+    accent: '#2BB3A3', accentHover: '#3CC7B6', onAccent: '#0F1B1A',
+    waste: '#F0A23B', wasteDeep: '#C27A12', wasteField: '#2E2516', lampOn: '#F0646B', lampOff: '#4CC38A',
+    chartBase: '#5E86C2', chartSaved: '#C27A12',
+    catAc: '#5B9BFF', catFan: '#2FB59D', catLight: '#A88BFA', catAv: '#E86FA3', catNeutral: '#ADA6A2',
+    kindClass: '#5B9BFF', kindStaff: '#A88BFA', kindService: '#ADA6A2',
+    tint: 0.14,
+  },
 };
 
-const STORAGE_KEY = 'gc-theme';
 
 const channels = (hex: string) => {
   const h = hex.replace('#', '');
@@ -72,19 +106,19 @@ export function applyTheme(name: ThemeName) {
   }
 }
 
-export function initialTheme(): ThemeName {
+export function initialTheme(storageKey = 'gc-theme-console', fallback: ThemeName = 'light'): ThemeName {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(storageKey);
     if (saved === 'light' || saved === 'dark') return saved;
   } catch {
     /* storage unavailable */
   }
-  return 'light';
+  return fallback;
 }
 
-export function saveTheme(name: ThemeName) {
+export function saveTheme(name: ThemeName, storageKey = 'gc-theme-console') {
   try {
-    localStorage.setItem(STORAGE_KEY, name);
+    localStorage.setItem(storageKey, name);
   } catch {
     /* storage unavailable */
   }
@@ -100,9 +134,11 @@ export interface ThemeState {
   name: ThemeName;
   p: Palette;
   toggle: () => void;
+  /** True when the style fixes its theme (no light/dark switch). */
+  locked: boolean;
 }
 
-export const ThemeContext = createContext<ThemeState>({ name: 'light', p: PALETTES.light, toggle: () => undefined });
+export const ThemeContext = createContext<ThemeState>({ name: 'light', p: PALETTES.light, toggle: () => undefined, locked: false });
 export const useTheme = () => useContext(ThemeContext);
 
 /** Colour for a load category (HVAC, FAN, LIGHTING, AV; everything else is neutral). */

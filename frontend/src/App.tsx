@@ -1,36 +1,26 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from './components/layout/Layout';
-import { ThemeProvider } from './components/layout/ThemeProvider';
-import { Overview } from './pages/Overview';
-import { ClassroomMonitoring } from './pages/ClassroomMonitoring';
-import { ExtraClassBooking } from './pages/ExtraClassBooking';
-import { Timetable } from './pages/Timetable';
-import { FloorMaps } from './pages/FloorMaps';
-import { AlertsEvents } from './pages/AlertsEvents';
-import { SavingsCalculator } from './pages/SavingsCalculator';
-import { Reports } from './pages/Reports';
-import { Settings } from './pages/Settings';
+import { Gallery } from './gallery/Gallery';
+import { StyleShell } from './styles/StyleShell';
+import { TreeApp } from './styles/tree/TreeApp';
+import { SiteApp } from './styles/site/SiteApp';
+
+const LEGACY = ['book', 'floors', 'savings', 'classrooms', 'timetable', 'alerts', 'reports', 'settings'];
 
 export const App: React.FC = () => (
-  <ThemeProvider>
   <Router>
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Overview />} />
-        <Route path="/classrooms" element={<ClassroomMonitoring />} />
-        <Route path="/book" element={<ExtraClassBooking />} />
-        <Route path="/timetable" element={<Timetable />} />
-        <Route path="/floors" element={<FloorMaps />} />
-        <Route path="/savings" element={<SavingsCalculator />} />
-        <Route path="/alerts" element={<AlertsEvents />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
+    <Routes>
+      <Route path="/" element={<Gallery />} />
+      <Route path="/night/*" element={<StyleShell id="night" />} />
+      <Route path="/console/*" element={<StyleShell id="console" />} />
+      <Route path="/tree/*" element={<TreeApp />} />
+      <Route path="/site/*" element={<SiteApp />} />
+      {LEGACY.map(r => (
+        <Route key={r} path={`/${r}`} element={<Navigate to={`/console/${r}`} replace />} />
+      ))}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   </Router>
-  </ThemeProvider>
 );
 
 export default App;

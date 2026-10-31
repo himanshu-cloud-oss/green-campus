@@ -308,3 +308,13 @@ class Asset(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
     space = relationship("Space", back_populates="assets")
+
+
+class HwAlarmAck(Base):
+    """Operator acknowledgement of a derived hardware alarm (alarms themselves are computed on the fly)."""
+
+    __tablename__ = "hw_alarm_acks"
+
+    key = Column(String(200), primary_key=True)
+    acked_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    actor = Column(String(100), default="admin", nullable=False)

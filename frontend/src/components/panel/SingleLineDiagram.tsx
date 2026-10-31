@@ -1,6 +1,6 @@
 import React from 'react';
 import { categoryColor, useTheme } from '../../theme';
-import { Category, CATEGORY_LABEL, LiveSnapshot, SpaceReading, STATE_LABEL } from '../../services/pilot';
+import { Category, LiveSnapshot, SpaceReading, STATE_LABEL } from '../../services/pilot';
 
 
 const ROOM_BRANCHES: Category[] = ['HVAC', 'FAN', 'LIGHTING', 'AV'];

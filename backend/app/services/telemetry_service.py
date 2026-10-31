@@ -174,7 +174,7 @@ class FloorModel:
         """When the space entered its current state (HH:MM), searched back in 5-minute steps."""
         t = dt.replace(second=0, microsecond=0)
         t -= timedelta(minutes=t.minute % 5)
-        for _ in range(16 * 12):
+        for _ in range(24 * 12):
             prev = t - timedelta(minutes=5)
             if prev.date() != dt.date() or self.occupancy(space, prev)["state"] != state:
                 break

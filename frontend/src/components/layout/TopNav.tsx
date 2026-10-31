@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Moon, Search, Sun } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { LayoutGrid, Moon, Search, Sun } from 'lucide-react';
 import { useTheme } from '../../theme';
 import { useLiveClock } from '../../hooks/useLiveClock';
 import { apiClient } from '../../services/api';
 import { NAV_ITEMS } from './navItems';
+import { usePaths } from '../../styles/StyleContext';
 
 export const TopNav: React.FC<{ onOpenPalette: () => void }> = ({ onOpenPalette }) => {
   const clock = useLiveClock();
   const { pathname } = useLocation();
   const [online, setOnline] = useState<boolean | null>(null);
-  const { name, toggle } = useTheme();
+  const { name, toggle, locked } = useTheme();
+  const path = usePaths();
 
   useEffect(() => {
     let alive = true;
@@ -27,7 +29,10 @@ export const TopNav: React.FC<{ onOpenPalette: () => void }> = ({ onOpenPalette 
     };
   }, []);
 
-  const page = NAV_ITEMS.find(n => (n.to === '/' ? pathname === '/' : pathname.startsWith(n.to)));
+  const page = NAV_ITEMS.find(n => {
+    const full = path(n.to);
+    return n.to === '/' ? pathname.replace(/\/$/, '') === full : pathname.startsWith(full);
+  });
 
   return (
     <header className="h-10 border-b border-black/10 flex items-center gap-4 px-4 bg-chrome text-chrome-ink sticky top-0 z-20">
@@ -37,10 +42,18 @@ export const TopNav: React.FC<{ onOpenPalette: () => void }> = ({ onOpenPalette 
         <span className="text-[13px] opacity-75 truncate">{page?.name ?? ''}</span>
       </div>
 
+      <Link
+        to="/"
+        className="ml-auto flex items-center gap-1.5 h-7 px-2.5 border border-chrome-ink/25 rounded-[3px] text-xs text-chrome-ink/75 hover:border-chrome-ink/50 snap"
+      >
+        <LayoutGrid className="w-3.5 h-3.5" strokeWidth={1.6} />
+        <span>Styles</span>
+      </Link>
+
       <button
         onClick={onOpenPalette}
         aria-label="Open command palette"
-        className="ml-auto flex items-center gap-2 h-7 px-2.5 md:w-64 max-w-[40vw] border border-chrome-ink/25 rounded-[3px] text-xs text-chrome-ink/75 hover:border-chrome-ink/50 snap"
+        className="flex items-center gap-2 h-7 px-2.5 md:w-64 max-w-[40vw] border border-chrome-ink/25 rounded-[3px] text-xs text-chrome-ink/75 hover:border-chrome-ink/50 snap"
       >
         <Search className="w-3.5 h-3.5" strokeWidth={1.6} />
         <span className="hidden md:inline truncate">Jump to room, page or action</span>
@@ -60,7 +73,7 @@ export const TopNav: React.FC<{ onOpenPalette: () => void }> = ({ onOpenPalette 
         <span className="hidden sm:inline">{online === false ? 'Backend offline' : 'Backend'}</span>
       </span>
 
-      <div role="group" aria-label="Colour theme" className="flex rounded-[3px] border border-chrome-ink/25 overflow-hidden text-xs">
+      {!locked && <div role="group" aria-label="Colour theme" className="flex rounded-[3px] border border-chrome-ink/25 overflow-hidden text-xs">
         {(['light', 'dark'] as const).map(m => (
           <button
             key={m}
@@ -73,7 +86,7 @@ export const TopNav: React.FC<{ onOpenPalette: () => void }> = ({ onOpenPalette 
             <span className="hidden lg:inline">{m === 'light' ? 'Light' : 'Dark'}</span>
           </button>
         ))}
-      </div>
+      </div>}
 
       <span className="num text-xs whitespace-nowrap">
         <span className="hidden sm:inline">{clock.weekdayShort} </span>{clock.time}

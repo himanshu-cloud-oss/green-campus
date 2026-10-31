@@ -17,6 +17,7 @@ import {
   STATE_LABEL,
   TimetableSlot,
 } from '../services/pilot';
+import { usePaths } from '../styles/StyleContext';
 
 const LIVE_MS = 15000;
 const STEP_MIN = 10;
@@ -61,6 +62,7 @@ const Kpi: React.FC<{ label: string; value: string; unit?: string; tone?: 'waste
 );
 
 export const Overview: React.FC = () => {
+  const p = usePaths();
   const [params, setParams] = useSearchParams();
   const [snap, setSnap] = useState<LiveSnapshot | null>(null);
   const [series, setSeries] = useState<SeriesPoint[]>([]);
@@ -263,7 +265,7 @@ export const Overview: React.FC = () => {
           <h2 className="section-title mb-2">Next · from {momentTime}</h2>
           {nextEvents.length === 0 ? (
             <p className="text-[13px] text-panel-muted">
-              Nothing else scheduled today. <Link to="/book" className="text-panel-ink underline underline-offset-4">Book an extra class</Link>
+              Nothing else scheduled today. <Link to={p('/book')} className="text-panel-ink underline underline-offset-4">Book an extra class</Link>
             </p>
           ) : (
             <ol className="space-y-2">
@@ -321,7 +323,7 @@ export const Overview: React.FC = () => {
                   <Power className="w-3 h-3" /> Trip while empty today
                 </button>
               )}
-              <Link to="/floors" className="text-xs text-panel-muted hover:text-panel-ink px-2 py-1">Edit devices</Link>
+              <Link to={p('/floors')} className="text-xs text-panel-muted hover:text-panel-ink px-2 py-1">Edit devices</Link>
             </div>
           </section>
         )}

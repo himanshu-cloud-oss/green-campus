@@ -3,11 +3,13 @@ import { NavLink } from 'react-router-dom';
 import { NAV_ITEMS } from './navItems';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useTheme } from '../../theme';
+import { usePaths } from '../../styles/StyleContext';
 
 /** Narrow icon rail. Labels show on hover/focus; number keys jump between pages. */
 export const Sidebar: React.FC = () => {
   const { unreadCount } = useAlerts();
   const { p } = useTheme();
+  const path = usePaths();
 
   return (
     <nav
@@ -26,7 +28,7 @@ export const Sidebar: React.FC = () => {
         return (
           <NavLink
             key={item.to}
-            to={item.to}
+            to={path(item.to)}
             end={item.to === '/'}
             aria-label={`${item.name} (${item.key})`}
             className={({ isActive }) =>

@@ -27,6 +27,7 @@ from app.api import (
     audit_router,
     inventory_router,
     telemetry_router,
+    hardware_router,
 )
 
 
@@ -74,6 +75,7 @@ app.include_router(forecast_router, prefix="/api")
 app.include_router(audit_router, prefix="/api")
 app.include_router(inventory_router, prefix="/api")
 app.include_router(telemetry_router, prefix="/api")
+app.include_router(hardware_router, prefix="/api")
 
 
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])

@@ -5,6 +5,7 @@ import { useClassrooms } from '../hooks/useClassrooms';
 import { api } from '../services/api';
 import { errorMessage, LiveSnapshot, pilot, SpaceReading } from '../services/pilot';
 import { ROOM_GRID, RoomRow, Switch } from '../components/classroom/RoomRow';
+import { usePaths } from '../styles/StyleContext';
 
 const fmt = (n: number) => n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const today = () => new Date().toLocaleDateString('en-CA');
@@ -21,6 +22,7 @@ const Figure: React.FC<{ label: string; value: string; unit?: string; tone?: 'wa
 );
 
 export const ClassroomMonitoring: React.FC = () => {
+  const p = usePaths();
   const [moment, setMoment] = useState<{ date: string; time: string } | null>(null);
   const live = moment === null;
   const { classrooms, isLoading, error, refetch } = useClassrooms(moment ?? undefined);
@@ -89,7 +91,7 @@ export const ClassroomMonitoring: React.FC = () => {
           <Figure label="Into empty rooms" value={fmt(totals.waste)} unit="kW" tone={totals.waste > 0 ? 'waste' : undefined} />
         </dl>
         <Link
-          to="/book"
+          to={p('/book')}
           className="ml-auto flex items-center gap-1.5 bg-accent text-accent-on text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-accent-hover snap"
         >
           <CalendarPlus className="w-3.5 h-3.5" strokeWidth={1.6} /> Book extra class

@@ -74,7 +74,13 @@ class SpacePatch(BaseModel):
     notes: Optional[str] = None
 
 
+class BuildingIn(BaseModel):
+    code: str = Field(..., min_length=1, max_length=20)
+    name: str = Field(..., min_length=1, max_length=100)
+
+
 class FloorIn(BaseModel):
+    building_id: Optional[int] = None
     level: int
     name: str
     is_pilot: bool = False
@@ -157,6 +163,43 @@ def inventory_meta():
     return {"categories": CATEGORIES, "space_kinds": SPACE_KINDS}
 
 
+# ----------------------------------------------------------------------------- buildings
+def building_out(b: Building) -> dict:
+    return {
+        "id": b.id, "code": b.code, "name": b.name,
+        "floors": [{
+            "id": f.id, "level": f.level, "name": f.name, "is_pilot": f.is_pilot,
+            "spaces_count": len(f.spaces),
+            "connected_kw": round(sum(space_connected_kw(s) for s in f.spaces), 2),
+        } for f in b.floors],
+    }
+
+
+@router.get("/buildings")
+def list_buildings(db: Session = Depends(get_db)):
+    buildings = (
+        db.query(Building)
+        .options(joinedload(Building.floors).joinedload(Floor.spaces).joinedload(Space.assets))
+        .order_by(Building.id)
+        .all()
+    )
+    return [building_out(b) for b in buildings]
+
+
+@router.post("/buildings", status_code=status.HTTP_201_CREATED)
+def create_building(payload: BuildingIn, db: Session = Depends(get_db)):
+    code = payload.code.strip().upper()
+    if db.query(Building).filter(Building.code == code).first():
+        raise HTTPException(status.HTTP_409_CONFLICT, f"Building {code} already exists")
+    building = Building(code=code, name=payload.name.strip())
+    db.add(building)
+    db.flush()
+    _audit(db, "BUILDING", building.id, "CREATE", {"code": code, "name": building.name})
+    db.commit()
+    db.refresh(building)
+    return building_out(building)
+
+
 # ----------------------------------------------------------------------------- floors
 @router.get("/floors")
 def list_floors(db: Session = Depends(get_db)):
@@ -176,14 +219,17 @@ def get_floor(floor_id: int, db: Session = Depends(get_db)):
 
 @router.post("/floors", status_code=status.HTTP_201_CREATED)
 def create_floor(payload: FloorIn, db: Session = Depends(get_db)):
-    building = db.query(Building).first()
+    if payload.building_id is not None:
+        building = _get(db, Building, payload.building_id)
+    else:
+        building = db.query(Building).order_by(Building.id).first()
     if not building:
         building = Building(code="L", name="L Block")
         db.add(building)
         db.flush()
     if db.query(Floor).filter(Floor.building_id == building.id, Floor.level == payload.level).first():
         raise HTTPException(status.HTTP_409_CONFLICT, f"Floor level {payload.level} already exists")
-    floor = Floor(building_id=building.id, **payload.model_dump())
+    floor = Floor(building_id=building.id, **payload.model_dump(exclude={"building_id"}))
     db.add(floor)
     db.flush()
     _audit(db, "FLOOR", floor.id, "CREATE", payload.model_dump())
