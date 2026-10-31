@@ -18,10 +18,10 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    primary: 'bg-panel-ink hover:bg-white text-panel-ground font-semibold border border-panel-ink',
+    primary: 'bg-accent hover:bg-accent-hover text-accent-on font-semibold border border-accent',
     secondary: 'bg-panel-raised hover:border-panel-wire text-panel-ink font-medium border border-panel-seam',
     danger: 'bg-transparent hover:bg-lamp-on/10 text-lamp-on font-semibold border border-lamp-on/60',
-    outline: 'bg-transparent hover:border-panel-ink text-panel-ink border border-panel-wire',
+    outline: 'bg-transparent hover:border-accent hover:text-accent text-panel-ink border border-panel-wire',
     ghost: 'bg-transparent hover:bg-panel-seam text-panel-ink border border-transparent',
   };
 

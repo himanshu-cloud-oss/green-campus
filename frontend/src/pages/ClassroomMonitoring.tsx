@@ -90,7 +90,7 @@ export const ClassroomMonitoring: React.FC = () => {
         </dl>
         <Link
           to="/book"
-          className="ml-auto flex items-center gap-1.5 bg-panel-ink text-panel-ground text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-white snap"
+          className="ml-auto flex items-center gap-1.5 bg-accent text-accent-on text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-accent-hover snap"
         >
           <CalendarPlus className="w-3.5 h-3.5" strokeWidth={1.6} /> Book extra class
         </Link>
@@ -103,14 +103,14 @@ export const ClassroomMonitoring: React.FC = () => {
             <button
               aria-pressed={live}
               onClick={() => setMoment(null)}
-              className={`px-3 py-1 text-xs snap ${live ? 'bg-panel-seam text-panel-ink' : 'text-panel-muted hover:text-panel-ink'}`}
+              className={`px-3 py-1 text-xs snap ${live ? 'bg-accent/10 text-accent font-semibold' : 'text-panel-muted hover:text-panel-ink'}`}
             >
               Live
             </button>
             <button
               aria-pressed={!live}
               onClick={() => setMoment(m => m ?? { date: today(), time: nowHM() })}
-              className={`px-3 py-1 text-xs snap ${!live ? 'bg-panel-seam text-panel-ink' : 'text-panel-muted hover:text-panel-ink'}`}
+              className={`px-3 py-1 text-xs snap ${!live ? 'bg-accent/10 text-accent font-semibold' : 'text-panel-muted hover:text-panel-ink'}`}
             >
               Pick a moment
             </button>

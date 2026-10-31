@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, Trash2, Check } from 'lucide-react';
+import { alpha, categoryColor, kindColor, useTheme } from '../theme';
+import { CategoryChip } from '../components/ui/CategoryChip';
 import {
   Asset,
   Category,
@@ -49,6 +51,7 @@ const Cell: React.FC<{
 };
 
 export const FloorMaps: React.FC = () => {
+  const { p } = useTheme();
   const [floors, setFloors] = useState<Floor[]>([]);
   const [types, setTypes] = useState<DeviceType[]>([]);
   const [floorId, setFloorId] = useState<number | null>(null);
@@ -110,7 +113,7 @@ export const FloorMaps: React.FC = () => {
           <div className="flex border border-panel-seam rounded-[3px]" role="tablist">
             {floors.map(f => (
               <button key={f.id} role="tab" aria-selected={f.id === floorId} onClick={() => { setFloorId(f.id); setSelectedId(null); }}
-                className={`px-3 py-1 text-xs ${f.id === floorId ? 'bg-panel-seam' : 'text-panel-muted'}`}>{f.name}</button>
+                className={`px-3 py-1 text-xs ${f.id === floorId ? 'bg-accent/10 text-accent font-semibold' : 'text-panel-muted'}`}>{f.name}</button>
             ))}
           </div>
         )}
@@ -123,27 +126,32 @@ export const FloorMaps: React.FC = () => {
         <div className="ml-auto flex items-center gap-3">
           {saved && <span className="text-xs text-panel-muted flex items-center gap-1"><Check className="w-3 h-3" />{saved}</span>}
           {error && <span className="text-xs text-lamp-on max-w-sm">{error}</span>}
-          <button onClick={() => { setAdding(true); setSelectedId(null); }} className="flex items-center gap-1.5 bg-panel-ink text-panel-ground text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-white snap">
+          <button onClick={() => { setAdding(true); setSelectedId(null); }} className="flex items-center gap-1.5 bg-accent text-accent-on text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-accent-hover snap">
             <Plus className="w-3.5 h-3.5" /> Add space
           </button>
         </div>
       </div>
 
-      {/* Floor plan */}
-      <div className="border border-panel-seam overflow-x-auto bg-[length:20px_20px]" style={{ backgroundImage: 'linear-gradient(#151A21 1px,transparent 1px),linear-gradient(90deg,#151A21 1px,transparent 1px)' }}>
+      {/* Floor plan + legend */}
+      <div className="flex flex-col xl:flex-row gap-4 items-start">
+      <div className="border border-panel-seam overflow-x-auto max-w-full bg-[length:20px_20px]" style={{ backgroundImage: 'linear-gradient(rgb(var(--c-grid)) 1px,transparent 1px),linear-gradient(90deg,rgb(var(--c-grid)) 1px,transparent 1px)' }}>
         <div className="relative mx-auto" style={{ width: floor.map_width * CELL, height: floor.map_height * CELL }} aria-label="Floor plan">
           {floor.spaces.map(s => {
             const sel = s.id === selectedId;
-            const isRoom = s.kind === 'CLASSROOM' || s.kind === 'LAB' || s.kind === 'STAFF_ROOM';
+            const kc = kindColor(p, s.kind);
             return (
               <button
                 key={s.id}
                 onClick={() => { setSelectedId(s.id); setAdding(false); }}
-                className={`absolute text-left p-2 border snap ${sel ? 'border-panel-ink z-10' : 'border-panel-wire hover:border-panel-muted'} ${isRoom ? 'bg-panel-raised' : 'bg-panel-ground/80'}`}
-                style={{ left: s.map_x * CELL, top: s.map_y * CELL, width: s.map_w * CELL, height: s.map_h * CELL, outline: sel ? '1px solid #D9DEE5' : undefined }}
+                className={`absolute text-left p-2 snap ${sel ? 'z-10' : 'hover:brightness-[0.97]'}`}
+                style={{
+                  left: s.map_x * CELL, top: s.map_y * CELL, width: s.map_w * CELL, height: s.map_h * CELL,
+                  background: `linear-gradient(${alpha(kc, p.tint)}, ${alpha(kc, p.tint)}), ${p.raised}`,
+                  border: sel ? `2px solid ${p.accent}` : `1px solid ${alpha(kc, 0.45)}`,
+                }}
               >
                 <div className="num text-[13px] font-semibold">{s.code}</div>
-                <div className="text-[11px] text-panel-muted truncate">{KIND_LABEL[s.kind]}{s.capacity ? ` · ${s.capacity} seats` : ''}</div>
+                <div className="text-[11px] font-semibold truncate" style={{ color: kc }}>{KIND_LABEL[s.kind]}{s.capacity ? ` · ${s.capacity} seats` : ''}</div>
                 {s.map_h >= 2 && (
                   <div className="num text-xs mt-1 whitespace-nowrap">{s.connected_kw.toFixed(2)} kW{s.map_w >= 4 && <span className="text-panel-muted"> · {s.assets.reduce((n, a) => n + a.quantity, 0)} dev</span>}</div>
                 )}
@@ -154,6 +162,8 @@ export const FloorMaps: React.FC = () => {
             );
           })}
         </div>
+      </div>
+      <PlanLegend />
       </div>
 
       {adding && <AddSpace floor={floor} onCancel={() => setAdding(false)} onCreate={body => run('Space added', async () => {
@@ -200,7 +210,7 @@ const SpaceForm: React.FC<{
           </select>
         </label>
         <label className="col-span-2 flex items-center gap-2 text-[13px]">
-          <input type="checkbox" checked={space.bookable} onChange={e => save('bookable', e.target.checked)} className="accent-[#D9DEE5]" />
+          <input type="checkbox" checked={space.bookable} onChange={e => save('bookable', e.target.checked)} className="accent-accent" />
           Can be booked for extra classes
         </label>
       </div>
@@ -229,6 +239,7 @@ const DeviceTable: React.FC<{
   types: DeviceType[];
   run: (label: string, fn: () => Promise<unknown>) => Promise<void>;
 }> = ({ space, types, run }) => {
+  const { p } = useTheme();
   const [newType, setNewType] = useState('LED_PANEL');
   const [newQty, setNewQty] = useState(1);
   const upd = (a: Asset, body: Partial<Asset>) => run(`${a.name} saved`, () => pilot.updateAsset(a.id, body));
@@ -261,16 +272,19 @@ const DeviceTable: React.FC<{
               <tr key={a.id} className="border-b border-panel-seam hover:bg-panel-raised/60">
                 <td className="px-1 py-0.5"><Cell label="Device name" value={a.name} onSave={v => upd(a, { name: v })} /></td>
                 <td className="px-1 py-0.5">
+                  <span className="inline-flex items-center gap-1 rounded-full pl-2" style={{ background: alpha(categoryColor(p, a.category), 0.14) }}>
+                  <span className="w-[7px] h-[7px] rounded-full" style={{ background: categoryColor(p, a.category) }} aria-hidden />
                   <select aria-label="Category" value={a.category} onChange={e => upd(a, { category: e.target.value as Category })}
-                    className="bg-transparent border border-transparent hover:border-panel-seam rounded-[2px] px-1 py-1 text-[13px] focus:outline-none focus:border-panel-ink">
+                    className="bg-transparent border border-transparent rounded-full pl-0.5 pr-1 py-0.5 text-[12px] font-semibold focus:outline-none focus:border-accent">
                     {CATEGORIES.map(c => <option key={c} value={c} className="bg-panel-raised">{CATEGORY_LABEL[c]}</option>)}
                   </select>
+                  </span>
                 </td>
                 <td className="px-1 py-0.5"><Cell label="Quantity" type="number" min={0} value={a.quantity} onSave={v => upd(a, { quantity: num(v) })} /></td>
                 <td className="px-1 py-0.5"><Cell label="Rated watts" type="number" min={0} value={a.rated_power_w} onSave={v => upd(a, { rated_power_w: num(v) })} /></td>
                 <td className="px-1 py-0.5"><Cell label="Standby watts" type="number" min={0} value={a.standby_power_w} onSave={v => upd(a, { standby_power_w: num(v) })} /></td>
                 <td className="px-2 py-0.5 text-center">
-                  <input type="checkbox" aria-label="Switchable" checked={a.controllable} onChange={e => upd(a, { controllable: e.target.checked })} className="accent-[#D9DEE5]" />
+                  <input type="checkbox" aria-label="Switchable" checked={a.controllable} onChange={e => upd(a, { controllable: e.target.checked })} className="accent-accent" />
                 </td>
                 <td className="px-2 py-0.5">
                   <button
@@ -314,7 +328,7 @@ const DeviceTable: React.FC<{
         <label className="w-20"><span className="label">Qty</span>
           <input type="number" min={1} className="field num" value={newQty} onChange={e => setNewQty(Math.max(1, Number(e.target.value)))} />
         </label>
-        <button type="submit" className="flex items-center gap-1.5 border border-panel-wire hover:border-panel-ink text-xs font-semibold px-3 py-1.5 rounded-[3px] snap">
+        <button type="submit" className="flex items-center gap-1.5 border border-panel-wire hover:border-accent hover:text-accent text-xs font-semibold px-3 py-1.5 rounded-[3px] snap">
           <Plus className="w-3.5 h-3.5" /> Add
         </button>
         {t && <span className="text-xs text-panel-muted pb-1.5">{CATEGORY_LABEL[t.category]} · typical {t.rated_w} W, standby {t.standby_w} W · marked estimated until verified</span>}
@@ -344,7 +358,7 @@ const AddSpace: React.FC<{ floor: Floor; onCancel: () => void; onCreate: (body: 
         <select className="field" value={kind} onChange={e => setKind(e.target.value as SpaceKind)}>{KINDS.map(k => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}</select>
       </label>
       <label className="w-24"><span className="label">Seats</span><input type="number" min={0} className="field num" value={capacity} onChange={e => setCapacity(Number(e.target.value))} /></label>
-      <button type="submit" className="bg-panel-ink text-panel-ground text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-white">Create</button>
+      <button type="submit" className="bg-accent text-accent-on text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-accent-hover">Create</button>
       <button type="button" onClick={onCancel} className="text-xs text-panel-muted hover:text-panel-ink px-2 py-1.5">Cancel</button>
       <p className="w-full text-[11px] text-panel-muted">Classrooms and labs join the timetable and can be booked. Place it on the plan afterwards with the position fields.</p>
     </form>
@@ -387,14 +401,14 @@ const SpecQueue: React.FC<{
             {rows.map(({ a, s }) => (
               <tr key={a.id} className="border-b border-panel-seam hover:bg-panel-raised/60">
                 <td className="px-3 py-1"><button onClick={() => onOpen(s.id)} className="num font-semibold hover:underline underline-offset-4">{s.code}</button></td>
-                <td className="px-2 py-1">{a.name}<span className="text-panel-muted"> · {CATEGORY_LABEL[a.category]}</span></td>
+                <td className="px-2 py-1"><span className="mr-2">{a.name}</span><CategoryChip category={a.category} /></td>
                 <td className="px-2 py-1 text-right num">{a.quantity}</td>
                 <td className="px-1 py-0.5"><Cell className="!border-panel-seam" label={`Rated watts, ${a.name} in ${s.code}`} type="number" min={0} value={a.rated_power_w} onSave={v => run(`${a.name} saved`, () => pilot.updateAsset(a.id, { rated_power_w: num(v) }))} /></td>
                 <td className="px-1 py-0.5"><Cell className="!border-panel-seam" label={`Standby watts, ${a.name} in ${s.code}`} type="number" min={0} value={a.standby_power_w} onSave={v => run(`${a.name} saved`, () => pilot.updateAsset(a.id, { standby_power_w: num(v) }))} /></td>
                 <td className="px-2 py-1 text-right num">{a.total_rated_kw.toFixed(2)}</td>
                 <td className="px-3 py-1 text-right">
                   <button onClick={() => run(`${a.name} verified`, () => pilot.updateAsset(a.id, { spec_status: 'VERIFIED' }))}
-                    className="flex items-center gap-1 ml-auto whitespace-nowrap text-xs border border-panel-wire hover:border-panel-ink px-2 py-1 rounded-[3px] snap">
+                    className="flex items-center gap-1 ml-auto whitespace-nowrap text-xs border border-panel-wire hover:border-accent hover:text-accent px-2 py-1 rounded-[3px] snap">
                     <Check className="w-3 h-3" /> Mark verified
                   </button>
                 </td>
@@ -404,5 +418,28 @@ const SpecQueue: React.FC<{
         </table>
       </div>
     </section>
+  );
+};
+
+/** Key for room tints and load-type colours used on this page. */
+const PlanLegend: React.FC = () => {
+  const { p } = useTheme();
+  const kinds: [string, string][] = [['CLASSROOM', 'Classroom'], ['STAFF_ROOM', 'Staff room'], ['CORRIDOR', 'Corridor, washroom, stairs']];
+  return (
+    <aside className="text-xs space-y-3 shrink-0" aria-label="Legend">
+      <div className="space-y-1.5">
+        <div className="section-title">Room types</div>
+        {kinds.map(([k, l]) => (
+          <div key={k} className="flex items-center gap-2">
+            <span className="w-4 h-3 rounded-[2px]" style={{ background: alpha(kindColor(p, k), 0.35), border: `1px solid ${alpha(kindColor(p, k), 0.6)}` }} />
+            {l}
+          </div>
+        ))}
+      </div>
+      <div className="space-y-1.5">
+        <div className="section-title">Load types</div>
+        {(['HVAC', 'FAN', 'LIGHTING', 'AV', 'IT'] as const).map(c => <div key={c}><CategoryChip category={c} /></div>)}
+      </div>
+    </aside>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { RotateCcw } from 'lucide-react';
+import { categoryColor, useTheme } from '../theme';
 import { Category, CATEGORY_LABEL, errorMessage, Floor, pilot, SavingsParams, SavingsResult } from '../services/pilot';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -35,12 +36,12 @@ const NumField: React.FC<{ label: string; value: number; onChange: (v: number) =
 
 const Toggle: React.FC<{ label: string; checked: boolean; onChange: (v: boolean) => void; hint?: string }> = ({ label, checked, onChange, hint }) => (
   <label className="flex items-start gap-2 text-[13px] cursor-pointer">
-    <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="accent-[#D9DEE5] mt-0.5" />
+    <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="accent-accent mt-0.5" />
     <span>{label}{hint && <span className="block text-[11px] text-panel-muted">{hint}</span>}</span>
   </label>
 );
 
-const BarList: React.FC<{ rows: { label: string; value: number }[]; total: number }> = ({ rows, total }) => {
+const BarList: React.FC<{ rows: { label: string; value: number; color?: string }[]; total: number }> = ({ rows, total }) => {
   const max = Math.max(1, ...rows.map(r => r.value));
   return (
     <ul className="space-y-1.5">
@@ -48,7 +49,7 @@ const BarList: React.FC<{ rows: { label: string; value: number }[]; total: numbe
         <li key={r.label} className="grid grid-cols-[120px_minmax(0,1fr)_88px] items-center gap-3 text-[13px]" title={`${r.label}: ${kwh(r.value)} kWh/yr`}>
           <span className="truncate">{r.label}</span>
           <span className="h-2.5 bg-panel-seam">
-            <span className="block h-full bg-chart-saved" style={{ width: `${(r.value / max) * 100}%` }} />
+            <span className="block h-full bg-chart-saved" style={{ width: `${(r.value / max) * 100}%`, background: r.color }} />
           </span>
           <span className="num text-right">{kwh(r.value)}<span className="text-panel-muted text-xs"> · {total ? Math.round((r.value / total) * 100) : 0}%</span></span>
         </li>
@@ -70,6 +71,7 @@ const MonthTooltip: React.FC<{ active?: boolean; payload?: { payload: SavingsRes
 };
 
 export const SavingsCalculator: React.FC = () => {
+  const { p } = useTheme();
   const [params, setParams] = useState<SavingsParams | null>(null);
   const [defaults, setDefaults] = useState<SavingsParams | null>(null);
   const [floor, setFloor] = useState<Floor | null>(null);
@@ -105,8 +107,8 @@ export const SavingsCalculator: React.FC = () => {
     [result]
   );
   const categoryRows = useMemo(
-    () => Object.entries(result?.by_category ?? {}).map(([k, v]) => ({ label: CATEGORY_LABEL[k as Category] ?? k, value: v })),
-    [result]
+    () => Object.entries(result?.by_category ?? {}).map(([k, v]) => ({ label: CATEGORY_LABEL[k as Category] ?? k, value: v, color: categoryColor(p, k) })),
+    [result, p]
   );
 
   if (!params) return <div className="p-8 text-sm text-panel-muted">{error ?? 'Loading the savings model…'}</div>;
@@ -131,7 +133,7 @@ export const SavingsCalculator: React.FC = () => {
               return (
                 <button key={s.id} type="button" aria-pressed={on}
                   onClick={() => set('space_ids', on ? selectedSpaces.filter(i => i !== s.id) : [...selectedSpaces, s.id])}
-                  className={`num text-xs py-1 border rounded-[3px] snap ${on ? 'border-panel-ink bg-panel-seam' : 'border-panel-seam text-panel-muted'}`}>
+                  className={`num text-xs py-1 border rounded-[3px] snap ${on ? 'border-accent bg-accent/10 text-accent font-semibold' : 'border-panel-seam text-panel-muted'}`}>
                   {s.code}
                 </button>
               );
@@ -224,12 +226,12 @@ export const SavingsCalculator: React.FC = () => {
               </div>
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart data={result.by_month} barGap={2} barCategoryGap="22%" margin={{ top: 8, right: 8, bottom: 0, left: -8 }}>
-                  <CartesianGrid vertical={false} stroke="#1A1F27" />
-                  <XAxis dataKey="month" tick={{ fill: '#7D8694', fontSize: 11 }} axisLine={{ stroke: '#222833' }} tickLine={false} />
-                  <YAxis tick={{ fill: '#7D8694', fontSize: 10.5, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} width={52} />
+                  <CartesianGrid vertical={false} stroke={p.seam} />
+                  <XAxis dataKey="month" tick={{ fill: p.muted, fontSize: 11 }} axisLine={{ stroke: p.seam }} tickLine={false} />
+                  <YAxis tick={{ fill: p.muted, fontSize: 10.5, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} width={52} />
                   <Tooltip content={<MonthTooltip />} cursor={{ fill: 'rgba(217,222,229,0.05)' }} isAnimationActive={false} />
-                  <Bar dataKey="baseline_kwh" fill="#5E86C2" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-                  <Bar dataKey="saved_kwh" fill="#C27A12" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <Bar dataKey="baseline_kwh" fill={p.chartBase} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <Bar dataKey="saved_kwh" fill={p.chartSaved} radius={[4, 4, 0, 0]} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </section>

@@ -21,7 +21,7 @@ export const WeekdaySelector: React.FC<WeekdaySelectorProps> = ({ selectedDay, o
           key={day}
           aria-pressed={on}
           onClick={() => onSelectDay(day)}
-          className={`px-3 py-1 text-xs snap flex items-center gap-1.5 ${on ? 'bg-panel-seam text-panel-ink' : 'text-panel-muted hover:text-panel-ink'}`}
+          className={`px-3 py-1 text-xs snap flex items-center gap-1.5 ${on ? 'bg-accent/10 text-accent font-semibold' : 'text-panel-muted hover:text-panel-ink'}`}
         >
           {day.slice(0, 3)}
           {dates?.[day] && <span className="num text-[11px] text-panel-muted">{dates[day]!.slice(8, 10)}</span>}

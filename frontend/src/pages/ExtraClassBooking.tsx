@@ -165,7 +165,7 @@ export const ExtraClassBooking: React.FC = () => {
           <div className="grid grid-cols-3 gap-1.5">
             {DURATIONS.map(d => (
               <button type="button" key={d} onClick={() => set('duration_minutes', d)} aria-pressed={req.duration_minutes === d}
-                className={`whitespace-nowrap num text-xs py-1.5 border rounded-[3px] snap ${req.duration_minutes === d ? 'border-panel-ink bg-panel-seam' : 'border-panel-seam text-panel-muted hover:border-panel-wire'}`}>
+                className={`whitespace-nowrap num text-xs py-1.5 border rounded-[3px] snap ${req.duration_minutes === d ? 'border-accent bg-accent/10 text-accent font-semibold' : 'border-panel-seam text-panel-muted hover:border-panel-wire'}`}>
                 {d} min
               </button>
             ))}
@@ -184,7 +184,7 @@ export const ExtraClassBooking: React.FC = () => {
               return (
                 <button type="button" key={n.key} aria-pressed={on}
                   onClick={() => set('needs', on ? req.needs.filter(x => x !== n.key) : [...req.needs, n.key])}
-                  className={`text-xs px-2.5 py-1 border rounded-[3px] snap ${on ? 'border-panel-ink bg-panel-seam' : 'border-panel-seam text-panel-muted hover:border-panel-wire'}`}>
+                  className={`text-xs px-2.5 py-1 border rounded-[3px] snap ${on ? 'border-accent bg-accent/10 text-accent font-semibold' : 'border-panel-seam text-panel-muted hover:border-panel-wire'}`}>
                   {n.label}
                 </button>
               );
@@ -193,19 +193,19 @@ export const ExtraClassBooking: React.FC = () => {
         </fieldset>
         <fieldset className="space-y-1.5 text-[13px]">
           <legend className="label">Rules</legend>
-          <label className="flex items-center gap-2"><input type="checkbox" className="accent-[#D9DEE5]" checked={req.align_to_periods} onChange={e => set('align_to_periods', e.target.checked)} />Start on period boundaries</label>
-          <label className="flex items-center gap-2"><input type="checkbox" className="accent-[#D9DEE5]" checked={req.allow_lunch} onChange={e => set('allow_lunch', e.target.checked)} />Allow the lunch break</label>
-          <label className="flex items-center gap-2"><input type="checkbox" className="accent-[#D9DEE5]" checked={req.include_weekends} onChange={e => set('include_weekends', e.target.checked)} />Include Saturday and Sunday</label>
+          <label className="flex items-center gap-2"><input type="checkbox" className="accent-accent" checked={req.align_to_periods} onChange={e => set('align_to_periods', e.target.checked)} />Start on period boundaries</label>
+          <label className="flex items-center gap-2"><input type="checkbox" className="accent-accent" checked={req.allow_lunch} onChange={e => set('allow_lunch', e.target.checked)} />Allow the lunch break</label>
+          <label className="flex items-center gap-2"><input type="checkbox" className="accent-accent" checked={req.include_weekends} onChange={e => set('include_weekends', e.target.checked)} />Include Saturday and Sunday</label>
         </fieldset>
         <label className="block"><span className="label">Notes</span>
           <input className="field" placeholder="Optional" value={req.notes} onChange={e => set('notes', e.target.value)} />
         </label>
         {error && <p className="text-xs text-lamp-on" role="alert">{error}</p>}
         <div className="flex gap-2 pt-1">
-          <button type="submit" disabled={busy} className="flex-1 bg-panel-ink text-panel-ground text-[13px] font-semibold py-2 rounded-[3px] hover:bg-white disabled:opacity-50 snap">
+          <button type="submit" disabled={busy} className="flex-1 bg-accent text-accent-on text-[13px] font-semibold py-2 rounded-[3px] hover:bg-accent-hover disabled:opacity-50 snap">
             {busy ? 'Searching…' : 'Find and book'}
           </button>
-          <button type="button" disabled={busy} onClick={() => submit(false)} className="border border-panel-wire hover:border-panel-ink text-[13px] px-3 rounded-[3px] snap disabled:opacity-50">
+          <button type="button" disabled={busy} onClick={() => submit(false)} className="border border-panel-wire hover:border-accent hover:text-accent text-[13px] px-3 rounded-[3px] snap disabled:opacity-50">
             Only suggest
           </button>
         </div>
@@ -251,7 +251,7 @@ export const ExtraClassBooking: React.FC = () => {
               )}
               <div className="mt-3 flex gap-2">
                 {!booked && (
-                  <button onClick={() => take(chosen)} disabled={busy} className="bg-panel-ink text-panel-ground text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-white">Book this</button>
+                  <button onClick={() => take(chosen)} disabled={busy} className="bg-accent text-accent-on text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-accent-hover">Book this</button>
                 )}
                 {booked && (
                   <button onClick={() => cancel(booked.id)} className="flex items-center gap-1 text-xs text-panel-muted hover:text-lamp-on border border-panel-seam px-3 py-1.5 rounded-[3px]"><X className="w-3 h-3" />Cancel booking</button>
@@ -285,7 +285,7 @@ export const ExtraClassBooking: React.FC = () => {
                         <td className="py-2 num text-right">{a.est_cost_inr.toFixed(0)}</td>
                         <td className="py-2 pl-4 text-xs text-panel-muted">{a.reasons[0] ?? '—'}</td>
                         <td className="py-2 text-right">
-                          <button disabled={busy} onClick={() => take(a)} className="flex items-center gap-1 ml-auto text-xs border border-panel-seam hover:border-panel-ink px-2 py-1 rounded-[3px] snap">
+                          <button disabled={busy} onClick={() => take(a)} className="flex items-center gap-1 ml-auto text-xs border border-panel-seam hover:border-accent hover:text-accent px-2 py-1 rounded-[3px] snap">
                             <ArrowRightLeft className="w-3 h-3" />{booked ? 'Switch to this' : 'Book this'}
                           </button>
                         </td>

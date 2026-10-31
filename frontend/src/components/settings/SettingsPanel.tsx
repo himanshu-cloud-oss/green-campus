@@ -106,7 +106,7 @@ export const SettingsPanel: React.FC = () => {
           <button
             type="submit"
             disabled={changed.length === 0 || isSaving}
-            className="bg-panel-ink text-panel-ground text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-white snap disabled:opacity-40 disabled:cursor-not-allowed"
+            className="bg-accent text-accent-on text-xs font-semibold px-3 py-1.5 rounded-[3px] hover:bg-accent-hover snap disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isSaving ? 'Saving…' : 'Save changes'}
           </button>

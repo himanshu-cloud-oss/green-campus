@@ -14,7 +14,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, acti
     <p className="text-panel-ink">{title}</p>
     {description && <p className="text-xs text-panel-muted mt-1 max-w-prose">{description}</p>}
     {actionLabel && onAction && (
-      <button onClick={onAction} className="mt-2 text-xs text-panel-ink underline underline-offset-4 hover:text-white">
+      <button onClick={onAction} className="mt-2 text-xs text-panel-ink underline underline-offset-4 hover:text-accent">
         {actionLabel}
       </button>
     )}

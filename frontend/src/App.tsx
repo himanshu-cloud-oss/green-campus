@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
+import { ThemeProvider } from './components/layout/ThemeProvider';
 import { Overview } from './pages/Overview';
 import { ClassroomMonitoring } from './pages/ClassroomMonitoring';
 import { ExtraClassBooking } from './pages/ExtraClassBooking';
@@ -12,6 +13,7 @@ import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 
 export const App: React.FC = () => (
+  <ThemeProvider>
   <Router>
     <Layout>
       <Routes>
@@ -28,6 +30,7 @@ export const App: React.FC = () => (
       </Routes>
     </Layout>
   </Router>
+  </ThemeProvider>
 );
 
 export default App;

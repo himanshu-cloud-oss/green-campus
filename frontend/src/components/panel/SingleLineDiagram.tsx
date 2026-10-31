@@ -1,12 +1,7 @@
 import React from 'react';
+import { categoryColor, useTheme } from '../../theme';
 import { Category, CATEGORY_LABEL, LiveSnapshot, SpaceReading, STATE_LABEL } from '../../services/pilot';
 
-const INK = '#D9DEE5';
-const MUTED = '#7D8694';
-const WIRE = '#3A414D';
-const WASTE = '#F5A524';
-const LAMP_ON = '#E5484D';
-const LAMP_OFF = '#3DD68C';
 
 const ROOM_BRANCHES: Category[] = ['HVAC', 'FAN', 'LIGHTING', 'AV'];
 const STAFF_BRANCHES: Category[] = ['HVAC', 'FAN', 'LIGHTING', 'IT'];
@@ -17,7 +12,8 @@ const ROOM_W = 108;
 const SVC_W = 72;
 const LEFT = 104;
 
-function feederStyle(s: SpaceReading) {
+function feederStyle(s: SpaceReading, c: { INK: string; WASTE: string; WIRE: string }) {
+  const { INK, WASTE, WIRE } = c;
   const live = s.kw > 0.05;
   const wasting = s.waste_kw > 0;
   const tripped = s.cut_armed && !live;
@@ -50,6 +46,8 @@ interface Props {
  * panel lamps follow the Indian convention (red energised, green tripped).
  */
 export const SingleLineDiagram: React.FC<Props> = ({ snapshot, selected, onSelect }) => {
+  const { p } = useTheme();
+  const INK = p.ink, MUTED = p.muted, WIRE = p.wire, WASTE = p.waste, LAMP_ON = p.lampOn, LAMP_OFF = p.lampOff;
   const rooms = snapshot.spaces.filter(s => !SERVICE_KINDS.has(s.kind));
   const services = snapshot.spaces.filter(s => SERVICE_KINDS.has(s.kind));
   const width = LEFT + rooms.length * ROOM_W + 24 + services.length * SVC_W + 20;
@@ -77,7 +75,7 @@ export const SingleLineDiagram: React.FC<Props> = ({ snapshot, selected, onSelec
     >
       <defs>
         <pattern id="sld-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path d="M20 0H0V20" fill="none" stroke="#151A21" strokeWidth="1" />
+          <path d="M20 0H0V20" fill="none" stroke={p.grid} strokeWidth="1" />
         </pattern>
       </defs>
       <rect width={width} height={height} fill="url(#sld-grid)" />
@@ -106,7 +104,7 @@ export const SingleLineDiagram: React.FC<Props> = ({ snapshot, selected, onSelec
       </text>
 
       {placed.map(({ s, x: fx, service }) => {
-        const st = feederStyle(s);
+        const st = feederStyle(s, { INK, WASTE, WIRE });
         const isSel = selected === s.code;
         const tagW = service ? 64 : 96;
         const dropTo = service ? 382 : 342;
@@ -136,7 +134,7 @@ export const SingleLineDiagram: React.FC<Props> = ({ snapshot, selected, onSelec
             {/* panel lamp */}
             <circle cx={fx} cy={BUS_Y + 30} r="4.5" fill={st.live ? LAMP_ON : LAMP_OFF} />
             {/* breaker: closed when live, open when tripped */}
-            <rect x={fx - 12} y={BUS_Y + 44} width="24" height="32" fill="#0E1116" />
+            <rect x={fx - 12} y={BUS_Y + 44} width="24" height="32" fill={p.ground} />
             {st.live || !st.tripped ? (
               <path d={`M${fx - 8} ${BUS_Y + 58} L${fx} ${BUS_Y + 58} L${fx + 9} ${BUS_Y + 46} M${fx} ${BUS_Y + 72} L${fx} ${BUS_Y + 80}`} stroke={st.color === WIRE ? MUTED : st.color} strokeWidth="2" fill="none" />
             ) : (
@@ -156,6 +154,7 @@ export const SingleLineDiagram: React.FC<Props> = ({ snapshot, selected, onSelec
                   return (
                     <g key={b.cat}>
                       <line x1={bx} y1={dropTo} x2={bx} y2={dropTo + 22} stroke={on ? st.color : WIRE} strokeWidth="2" />
+                      <rect x={bx - 3.5} y={dropTo + 19} width="7" height="7" rx="1.5" fill={categoryColor(p, b.cat)} opacity={on ? 1 : 0.35} />
                       <text x={bx} y={dropTo + 36} fill={MUTED} fontSize="10" textAnchor="middle" fontFamily="JetBrains Mono">
                         {({ HVAC: 'AC', FAN: 'FN', LIGHTING: 'LT', AV: 'AV', IT: 'IT' } as Record<string, string>)[b.cat] ?? b.cat.slice(0, 2)}
                       </text>
@@ -171,7 +170,7 @@ export const SingleLineDiagram: React.FC<Props> = ({ snapshot, selected, onSelec
             {/* room tag */}
             <rect
               x={fx - tagW / 2} y={service ? 400 : 410} width={tagW} height={service ? 52 : 70}
-              fill={st.wasting ? '#191307' : '#141920'}
+              fill={st.wasting ? p.wasteField : p.raised}
               stroke={isSel ? INK : st.wasting ? WASTE : WIRE}
               strokeWidth={isSel ? 2 : 1}
             />

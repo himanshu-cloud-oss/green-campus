@@ -112,7 +112,7 @@ export const RoomRow: React.FC<Props> = ({ room, reading, live, busy, onSwitch, 
                 onClick={() => onSwitch(sw.key, !on)}
                 title={live ? `Switch ${sw.label.toLowerCase()} ${on ? 'off' : 'on'} for today (simulated)` : 'Return to live to switch'}
                 className={`text-xs px-2.5 py-1 rounded-[3px] border snap disabled:cursor-not-allowed disabled:opacity-50 ${
-                  on ? 'border-panel-ink bg-panel-seam text-panel-ink' : 'border-panel-seam text-panel-muted hover:border-panel-wire'
+                  on ? 'border-accent bg-accent/10 text-accent font-semibold' : 'border-panel-seam text-panel-muted hover:border-panel-wire'
                 }`}
               >
                 {sw.label}
@@ -126,7 +126,7 @@ export const RoomRow: React.FC<Props> = ({ room, reading, live, busy, onSwitch, 
             <button
               disabled={!live || busy}
               onClick={onRelease}
-              className="flex items-center gap-1.5 border border-panel-wire hover:border-panel-ink text-xs px-2.5 py-1 rounded-[3px] snap disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 border border-panel-wire hover:border-accent hover:text-accent text-xs px-2.5 py-1 rounded-[3px] snap disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Undo2 className="w-3 h-3" strokeWidth={1.6} /> Release trip
             </button>
@@ -135,7 +135,7 @@ export const RoomRow: React.FC<Props> = ({ room, reading, live, busy, onSwitch, 
               disabled={!live || busy || !reading}
               onClick={onTrip}
               title={live ? `Switch off ${room.name}'s controllable loads while it is empty today` : 'Return to live to trip'}
-              className="flex items-center gap-1.5 border border-panel-wire hover:border-panel-ink text-[11px] font-semibold tracking-[0.1em] px-2.5 py-1 rounded-[3px] snap disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 border border-panel-wire hover:border-accent hover:text-accent text-[11px] font-semibold tracking-[0.1em] px-2.5 py-1 rounded-[3px] snap disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Power className="w-3 h-3" strokeWidth={1.6} /> TRIP
             </button>

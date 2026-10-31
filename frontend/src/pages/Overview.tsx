@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { RotateCcw, Power, Undo2 } from 'lucide-react';
 import { SingleLineDiagram } from '../components/panel/SingleLineDiagram';
 import { LoadRibbon } from '../components/panel/LoadRibbon';
+import { CategoryDot } from '../components/ui/CategoryChip';
 import {
   BookingRecord,
   CATEGORY_LABEL,
@@ -213,7 +214,7 @@ export const Overview: React.FC = () => {
         <div className="flex items-center gap-3 mb-1">
           <h1 className="section-title">Single-line · {at ? 'replay' : 'live'}</h1>
           {at && (
-            <button onClick={() => setParam('at', null)} className="flex items-center gap-1 text-xs text-panel-ink border border-panel-wire px-2 py-0.5 rounded-[2px] hover:border-panel-ink snap">
+            <button onClick={() => setParam('at', null)} className="flex items-center gap-1 text-xs text-panel-ink border border-panel-wire px-2 py-0.5 rounded-[2px] hover:border-accent hover:text-accent snap">
               <RotateCcw className="w-3 h-3" /> Back to live
             </button>
           )}
@@ -249,7 +250,7 @@ export const Overview: React.FC = () => {
                   disabled={!!at || busy === s.space_id}
                   onClick={() => act(s, () => pilot.cut(s.space_id))}
                   title={at ? 'Return to live to trip' : `Switch off ${s.code}'s controllable loads while it is empty today`}
-                  className="ml-3 flex items-center gap-1.5 border border-panel-wire hover:border-panel-ink text-[11px] font-semibold tracking-[0.1em] px-2.5 py-1 rounded-[3px] snap disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="ml-3 flex items-center gap-1.5 border border-panel-wire hover:border-accent hover:text-accent text-[11px] font-semibold tracking-[0.1em] px-2.5 py-1 rounded-[3px] snap disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Power className="w-3 h-3" /> TRIP
                 </button>
@@ -303,7 +304,7 @@ export const Overview: React.FC = () => {
               <tbody>
                 {sel.assets.map(a => (
                   <tr key={a.asset_id} className="border-t border-panel-seam">
-                    <td className="py-1.5">{a.name}<span className="text-panel-muted"> · {CATEGORY_LABEL[a.category]}{a.controllable ? '' : ' · always on'}</span></td>
+                    <td className="py-1.5"><span className="inline-flex items-center gap-1.5"><CategoryDot category={a.category} />{a.name}</span><span className="text-panel-muted"> · {CATEGORY_LABEL[a.category]}{a.controllable ? '' : ' · always on'}</span></td>
                     <td className={`py-1.5 text-right num ${a.on_count ? 'text-panel-ink' : 'text-panel-muted'}`}>{a.on_count}/{a.quantity}</td>
                     <td className="py-1.5 text-right num">{a.kw.toFixed(2)}</td>
                   </tr>
@@ -312,11 +313,11 @@ export const Overview: React.FC = () => {
             </table>
             <div className="flex gap-2 mt-3">
               {sel.cut_armed ? (
-                <button disabled={!!at} onClick={() => act(sel, () => pilot.releaseCut(sel.space_id))} className="flex items-center gap-1.5 border border-panel-wire hover:border-panel-ink text-xs px-3 py-1 rounded-[3px] snap disabled:opacity-40">
+                <button disabled={!!at} onClick={() => act(sel, () => pilot.releaseCut(sel.space_id))} className="flex items-center gap-1.5 border border-panel-wire hover:border-accent hover:text-accent text-xs px-3 py-1 rounded-[3px] snap disabled:opacity-40">
                   <Undo2 className="w-3 h-3" /> Release trip
                 </button>
               ) : (
-                <button disabled={!!at || busy === sel.space_id} onClick={() => act(sel, () => pilot.cut(sel.space_id))} className="flex items-center gap-1.5 border border-panel-wire hover:border-panel-ink text-xs px-3 py-1 rounded-[3px] snap disabled:opacity-40">
+                <button disabled={!!at || busy === sel.space_id} onClick={() => act(sel, () => pilot.cut(sel.space_id))} className="flex items-center gap-1.5 border border-panel-wire hover:border-accent hover:text-accent text-xs px-3 py-1 rounded-[3px] snap disabled:opacity-40">
                   <Power className="w-3 h-3" /> Trip while empty today
                 </button>
               )}
